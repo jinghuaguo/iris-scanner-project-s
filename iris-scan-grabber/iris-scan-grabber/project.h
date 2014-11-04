@@ -48,7 +48,6 @@ public:
     void generateMark(QString &output);
     void rebuildTopoCorrespondences(int base = -1);
     const Matrix4f &getTransformMatrix(int target, int source);
-    int readMark(QString mark);
     void savePointCloudInProject(int index, QString path);
 
 };

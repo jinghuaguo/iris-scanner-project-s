@@ -15,6 +15,10 @@
 #include <cmath>
 
 #include <QString>
+#include <QTextStream>
+#include <QFile>
+#include <QDir>
+#include <QFileInfo>
 
 const std::string currentDateTime()
 {
@@ -73,19 +77,41 @@ public:
         cloud_ = cloud;
         if (capture)
         {
-            pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c(new pcl::PointCloud<pcl::PointXYZRGBA>());
-            (*c) = (*cloud);
+            pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2s(new pcl::PointCloud<pcl::PointXYZRGBA>());
+            (*c2s) = (*cloud);
             if (crop)
-                cropCloud(c, 25);
+                cropCloud(c2s, 25);
 
+            QString name = QString::fromStdString(path) + "\\" + QString::fromStdString(currentDateTime()) + ".pcd";
+            cPrj->addCloud(c2s, name);
+            cPrj->cIsSaved[cPrj->getCloudSize() - 1] = false;
             std::stringstream ss;
-            ss << "One cloud captured : [" << cPrj->cPath[cPrj->getCloudSize()].toStdString() << "]." << endl << "Total number of unsaved clouds : " << cPrj->getCloudSize() << ".";
+            ss << "One cloud captured : [" << cPrj->cPath[cPrj->getCloudSize() - 1].toStdString() << "]." << endl << "Total number of unsaved clouds : " << cPrj->getCloudSize() << ".";
             cloud_viewer_->updateText(ss.str(), 20, 20, 14, 0, 1, 1, "Status");
             capture = false;
         }
         if (save)
         {
-            
+            for (int i = 0; i < cPrj->getCloudSize(); i++)
+                if (cPrj->cIsSaved[i] == false)
+                {
+                    cPrj->savePointCloudInProject(i, cPrj->cPath[i]);
+                    cPrj->cIsSaved[i] == true;
+                }
+            QString mark;
+            cPrj->generateMark(mark);
+
+            QFile file(cPrj->name);
+            if (!file.open(QIODevice::WriteOnly))
+            {
+                cloud_viewer_->updateText("Cannot save the project file.", 20, 20, 14, 1, 0, 0, "Status");
+                save = false;
+                return;
+            }
+
+            QTextStream ts(&file);
+            ts << mark;
+
             cloud_viewer_->updateText("Save completed.", 20, 20, 14, 1, 1, 0, "Status");
             save = false;
         }

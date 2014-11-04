@@ -9,18 +9,11 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <fstream>
-#include <cstring>
 
 #include <pcl/correspondence.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/console/print.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
-#include <pcl/io/ply_io.h>
-#include <pcl/PolygonMesh.h>
 #include <pcl/registration/correspondence_types.h>
 #include <pcl/registration/transforms.h>
 #include <pcl/visualization/pcl_visualizer.h>

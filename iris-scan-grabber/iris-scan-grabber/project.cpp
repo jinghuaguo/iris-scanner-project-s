@@ -219,47 +219,6 @@ const Matrix4f &Project::getTransformMatrix(int target, int source)
     else return Identity4f;
 }
 
-int Project::readMark(QString mark)
-{
-    if (mark[0] == '#') // Comments
-        return 0;
-    QStringList split = mark.split('|');
-    if (split[0] == "VERSION")
-    {
-        double para = split[1].toDouble();
-        if (para < ISProjMaxVersion)
-        {
-            return -6; // Version is too high
-        }
-    }
-    else if (split[0] == "CLOUD")
-    {
-        OriCloudPtr cloud(new OriCloud());
-        Utils::readSinglePointCloud(split[1].toStdString(), cloud);
-        this->addCloud(cloud, split[1]);
-        this->cIsSaved[this->getCloudSize() - 1] = true;
-        int para = split[2].toInt();
-        for (int i = 0; i < para; i++)
-            this->cKeyPoints[this->getCloudSize() - 1].push_back(split[3 + i].toInt());
-    }
-    else if (split[0] == "CORRESPONDENCE")
-    {
-        this->addCorrespondence(split[1].toInt(), split[2].toInt());
-        for (int i = 0; i < 16; i++)
-        {
-            this->rMatrix[this->getCorrespondenceSize() - 1](i) = split[3 + i].toFloat();
-        }
-    }
-    else if (split[0] == "PROCCLOUDS")
-    {
-        for (int i = 0; i < split[1].toInt(); i++)
-        {
-            this->procClouds.push_back(split[2 + i].toInt());
-        }
-    }
-    return 0;
-}
-
 void Project::removeAllTopoCorrespondences()
 {
     if (this->getCorrespondenceSize() < 1) return;
@@ -273,6 +232,7 @@ void Project::removeAllTopoCorrespondences()
     }
     while (i != this->getCorrespondenceSize());
 }
+
 void Project::savePointCloudInProject(int index, QString path)
 {
     Utils::savePointCloud(this->cRaw[index], path.toStdString());
