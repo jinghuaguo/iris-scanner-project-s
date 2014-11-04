@@ -2,7 +2,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "settingwindow.h"
-#include "grabberwindow.h"
 
 #include "QMessageBox"
 #include "QInputDialog"
