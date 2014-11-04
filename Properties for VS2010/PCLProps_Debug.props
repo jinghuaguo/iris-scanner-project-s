@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>C:\Program Files (x86)\Boost\include;C:\Program Files (x86)\Eigen\include;C:\Program Files (x86)\Flann\include;C:\Program Files (x86)\Qhull\include;C:\Program Files (x86)\VTK 5.8.0\include\vtk-5.8;C:\Program Files (x86)\OpenNI\Include;C:\Program Files (x86)\PCL\include\pcl-1.7;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
+    <LibraryPath>C:\Program Files (x86)\Boost\lib;C:\Program Files (x86)\Qhull\lib;C:\Program Files (x86)\Flann\lib;C:\Program Files (x86)\VTK 5.8.0\lib\vtk-5.8;C:\Program Files (x86)\PCL\lib;C:\Program Files (x86)\OpenNI\Lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>opengl32.lib;pcl_kdtree_debug.lib;pcl_surface_debug.lib;pcl_io_debug.lib;pcl_search_debug.lib;pcl_segmentation_debug.lib;pcl_features_debug.lib;pcl_filters_debug.lib;pcl_visualization_debug.lib;pcl_common_debug.lib;flann_cpp_s-gd.lib;libboost_system-vc100-mt-gd-1_50.lib;libboost_filesystem-vc100-mt-gd-1_50.lib;libboost_thread-vc100-mt-gd-1_50.lib;libboost_date_time-vc100-mt-gd-1_50.lib;libboost_iostreams-vc100-mt-gd-1_50.lib;openNI.lib;vtkalglib-gd.lib;vtkCharts-gd.lib;vtkCommon-gd.lib;vtkDICOMParser-gd.lib;vtkexoIIc-gd.lib;vtkexpat-gd.lib;vtkFiltering-gd.lib;vtkfreetype-gd.lib;vtkftgl-gd.lib;vtkGenericFiltering-gd.lib;vtkGeovis-gd.lib;vtkGraphics-gd.lib;vtkhdf5-gd.lib;vtkHybrid-gd.lib;vtkImaging-gd.lib;vtkInfovis-gd.lib;vtkIO-gd.lib;vtkjpeg-gd.lib;vtklibxml2-gd.lib;vtkmetaio-gd.lib;vtkNetCDF-gd.lib;vtkNetCDF_cxx-gd.lib;vtkpng-gd.lib;vtkproj4-gd.lib;vtkRendering-gd.lib;vtksqlite-gd.lib;vtksys-gd.lib;vtktiff-gd.lib;vtkverdict-gd.lib;vtkViews-gd.lib;vtkVolumeRendering-gd.lib;vtkWidgets-gd.lib;vtkzlib-gd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

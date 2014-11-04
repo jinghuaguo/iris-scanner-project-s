@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Segoe UI</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>IRIS Scan Handler</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/Kinect.ico</normaloff>:/icons/Kinect.ico</iconset>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_Capture">
+    <property name="title">
+     <string>&amp;Capture</string>
+    </property>
+    <addaction name="action_Start_capturing"/>
+   </widget>
+   <widget class="QMenu" name="menu_Registration">
+    <property name="title">
+     <string>&amp;Registration</string>
+    </property>
+    <addaction name="actionRegister_by_Gray_Scale_Features"/>
+    <addaction name="actionRegister_by_ICP"/>
+    <addaction name="actionRegister_by_Incremental_ICP"/>
+    <addaction name="separator"/>
+    <addaction name="actionRegister_by_Manual_Keypoint"/>
+   </widget>
+   <widget class="QMenu" name="menu_Surface">
+    <property name="title">
+     <string>&amp;Surface</string>
+    </property>
+    <addaction name="actionMoving_Least_Squares"/>
+    <addaction name="separator"/>
+    <addaction name="actionGreedy_Projection_Triangulation"/>
+    <addaction name="separator"/>
+    <addaction name="actionRemove_the_Mesh_s_in_Selected_Cloud_s"/>
+   </widget>
+   <widget class="QMenu" name="menu_Utilities">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="actionApply_Transformation_with"/>
+    <addaction name="action_Combine"/>
+    <addaction name="actionC_reate_Copy"/>
+    <addaction name="action_Downsample"/>
+    <addaction name="separator"/>
+    <addaction name="actionSe_ttings"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;About</string>
+    </property>
+    <addaction name="actionAbout_IRIS_Scan_Handler"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout_Qt"/>
+   </widget>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionNew"/>
+    <addaction name="actionOpen_Project"/>
+    <addaction name="actionSave_Current_Project"/>
+    <addaction name="actionSave_Current_Project_As"/>
+    <addaction name="separator"/>
+    <addaction name="action_File"/>
+    <addaction name="action_Folder"/>
+    <addaction name="action_Export_Selected_Point_Cloud_s"/>
+    <addaction name="separator"/>
+    <addaction name="action_Refresh"/>
+    <addaction name="actionRe_load_Current_Project"/>
+    <addaction name="separator"/>
+    <addaction name="action_Exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="action_Data_List"/>
+    <addaction name="action_Process_List"/>
+    <addaction name="action_Information"/>
+    <addaction name="separator"/>
+    <addaction name="action_CoordinateSystem"/>
+    <addaction name="action_Reset_Camera_Parameter"/>
+    <addaction name="actionSet_Background_Color"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionSelect_All_Cloud_s"/>
+    <addaction name="action_Remove_Current_Clouds"/>
+    <addaction name="separator"/>
+    <addaction name="actionRemove_the_Recent_Key_Point"/>
+    <addaction name="actionRemove_All_K_ey_Point"/>
+    <addaction name="separator"/>
+    <addaction name="action_Add_Selected_Cloud_s_to_Process_List"/>
+    <addaction name="action_Clear_Process_List"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_View"/>
+   <addaction name="menu_Capture"/>
+   <addaction name="menu_Registration"/>
+   <addaction name="menu_Surface"/>
+   <addaction name="menu_Utilities"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QDockWidget" name="dockDataList">
+   <property name="minimumSize">
+    <size>
+     <width>277</width>
+     <height>344</height>
+    </size>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="features">
+    <set>QDockWidget::AllDockWidgetFeatures</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::AllDockWidgetAreas</set>
+   </property>
+   <property name="windowTitle">
+    <string>Assets</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockDataListWidget">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QTabWidget" name="tabDataList">
+       <property name="tabPosition">
+        <enum>QTabWidget::West</enum>
+       </property>
+       <property name="tabShape">
+        <enum>QTabWidget::Rounded</enum>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tabData1">
+        <attribute name="title">
+         <string>Point Clouds</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QListWidget" name="lstPointClouds">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabData2">
+        <attribute name="title">
+         <string>Correspondences</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QListWidget" name="lstCorrespondences">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockProcList">
+   <property name="windowTitle">
+    <string>Process List</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item>
+      <layout class="QGridLayout" name="gridLayoutProcList">
+       <item row="0" column="0" colspan="2">
+        <widget class="QListWidget" name="lstProcessList">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="btnProcToTop">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="sizeIncrement">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>↑</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="chkShowFusedProcList">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Show Fused &amp;Proc. List</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockInfo">
+   <property name="minimumSize">
+    <size>
+     <width>200</width>
+     <height>112</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::AllDockWidgetAreas</set>
+   </property>
+   <property name="windowTitle">
+    <string>Information</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockInfoWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QTextBrowser" name="txtInfo"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionAbout_IRIS_Scan_Handler">
+   <property name="text">
+    <string>About &amp;IRIS Scan Handler</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F1</string>
+   </property>
+  </action>
+  <action name="action_Exit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F4</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>&amp;New Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionOpen_Project">
+   <property name="text">
+    <string>&amp;Open Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSave_Current_Project">
+   <property name="text">
+    <string>&amp;Save Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_Export_Selected_Point_Cloud_s">
+   <property name="text">
+    <string>&amp;Export Selected Point Cloud</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="action_Start_capturing">
+   <property name="text">
+    <string>&amp;Open Grabber</string>
+   </property>
+   <property name="shortcut">
+    <string>F9</string>
+   </property>
+  </action>
+  <action name="actionRegister_by_Gray_Scale_Features">
+   <property name="text">
+    <string>Register by &amp;Gray-Scale Features</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R, G</string>
+   </property>
+  </action>
+  <action name="actionRegister_by_ICP">
+   <property name="text">
+    <string>Register by &amp;ICP</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R, I</string>
+   </property>
+  </action>
+  <action name="actionRegister_by_Incremental_ICP">
+   <property name="text">
+    <string>Register by Incremental I&amp;CP</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R, Ctrl+I</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionMoving_Least_Squares">
+   <property name="text">
+    <string>&amp;Moving Least Squares in Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S, M</string>
+   </property>
+  </action>
+  <action name="actionGreedy_Projection_Triangulation">
+   <property name="text">
+    <string>&amp;Greedy Projection Triangulation in Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S, G</string>
+   </property>
+  </action>
+  <action name="actionSe_ttings">
+   <property name="text">
+    <string>Se&amp;ttings</string>
+   </property>
+   <property name="shortcut">
+    <string>F12</string>
+   </property>
+  </action>
+  <action name="actionApply_Transformation_with">
+   <property name="text">
+    <string>&amp;Apply Transformation with Base</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
+  </action>
+  <action name="actionRegister_by_Manual_Keypoint">
+   <property name="text">
+    <string>Register by Manual &amp;Keypoint</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R, K</string>
+   </property>
+  </action>
+  <action name="action_Data_List">
+   <property name="text">
+    <string>&amp;Assets</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V, D</string>
+   </property>
+  </action>
+  <action name="action_Information">
+   <property name="text">
+    <string>&amp;Information</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V, I</string>
+   </property>
+  </action>
+  <action name="action_CoordinateSystem">
+   <property name="text">
+    <string>Show/Hide &amp;Coordinate System</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V, C</string>
+   </property>
+  </action>
+  <action name="action_Reset_Camera_Parameter">
+   <property name="text">
+    <string>&amp;Reset Camera Parameter</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V, R</string>
+   </property>
+  </action>
+  <action name="action_Normal_Mode">
+   <property name="text">
+    <string>&amp;Normal Mode</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionKeypoint_Picking_Mode">
+   <property name="text">
+    <string>&amp;Keypoint Picking Mode</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="actionSet_Background_Color">
+   <property name="text">
+    <string>Set &amp;Background Color</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V, B</string>
+   </property>
+  </action>
+  <action name="action_Clear_Process_List">
+   <property name="text">
+    <string>&amp;Clear Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Del</string>
+   </property>
+  </action>
+  <action name="action_Downsample">
+   <property name="text">
+    <string>&amp;Downsample Clouds in Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T, D</string>
+   </property>
+  </action>
+  <action name="action_Combine">
+   <property name="text">
+    <string>&amp;Combine Clouds in Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T, C</string>
+   </property>
+  </action>
+  <action name="action_File">
+   <property name="text">
+    <string>Import Point Clouds by F&amp;ile</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="action_Folder">
+   <property name="text">
+    <string>Import Point Clouds by F&amp;older</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F3</string>
+   </property>
+  </action>
+  <action name="actionRe_load_Current_Project">
+   <property name="text">
+    <string>Re&amp;load Current Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+F5</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Refresh">
+   <property name="text">
+    <string>&amp;Refresh</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="action_Remove_Current_Clouds">
+   <property name="text">
+    <string>&amp;Remove Selected Cloud(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="action_Process_List">
+   <property name="text">
+    <string>&amp;Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V, P</string>
+   </property>
+  </action>
+  <action name="action_Add_Selected_Cloud_s_to_Process_List">
+   <property name="text">
+    <string>&amp;Add Selected Cloud(s) to Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Return</string>
+   </property>
+  </action>
+  <action name="actionSelect_All_Cloud_s">
+   <property name="text">
+    <string>&amp;Select All Cloud(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionSave_Current_Project_As">
+   <property name="text">
+    <string>Save Project &amp;As</string>
+   </property>
+  </action>
+  <action name="actionRemove_the_Recent_Key_Point">
+   <property name="text">
+    <string>Remove the Recent Created &amp;Key Point</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Del</string>
+   </property>
+  </action>
+  <action name="actionRemove_All_K_ey_Point">
+   <property name="text">
+    <string>Remove All K&amp;ey Points</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Shift+Del</string>
+   </property>
+  </action>
+  <action name="actionC_reate_Copy">
+   <property name="text">
+    <string>C&amp;reate Copies of Process List</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T, R</string>
+   </property>
+  </action>
+  <action name="actionRemove_the_Mesh_s_in_Selected_Cloud_s">
+   <property name="text">
+    <string>&amp;Remove the Mesh(es) in Selected Cloud(s)</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>action_Data_List</sender>
+   <signal>triggered()</signal>
+   <receiver>dockDataList</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>99</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Process_List</sender>
+   <signal>triggered()</signal>
+   <receiver>dockProcList</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>160</x>
+     <y>334</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Information</sender>
+   <signal>triggered()</signal>
+   <receiver>dockInfo</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>327</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSelect_All_Cloud_s</sender>
+   <signal>triggered()</signal>
+   <receiver>lstPointClouds</receiver>
+   <slot>selectAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>170</x>
+     <y>205</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
