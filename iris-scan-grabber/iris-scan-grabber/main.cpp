@@ -69,6 +69,20 @@ public:
         : cloud_viewer_(new pcl::visualization::PCLVisualizer("Initalizing..."))
         , grabber_(grabber)
     {
+        matL1 = Identity4f;
+        matL2 = Identity4f;
+        matL3 = Identity4f;
+    }
+
+    bool isShaking(Matrix4f &mat)
+    {
+        if      (abs(mat(0) - 1) > 0.5 || abs(mat(5) - 1) > 0.5 || abs(mat(10) - 1) > 0.5 ||
+                 abs(mat(1)) > 0.3 || abs(mat(2)) > 0.3 || abs(mat(4)) > 0.3 || abs(mat(6)) > 0.3 ||
+                 abs(mat(8)) > 0.3 || abs(mat(9)) > 0.3 ||
+                 abs(mat(12) - 1) > 0.5 || abs(mat(13) - 1) > 0.5 || abs(mat(14) - 1) > 0.5)
+            return true;
+        else
+            return false;
     }
 
     void cloud_callback(const CloudConstPtr& cloud)
@@ -79,12 +93,27 @@ public:
         {
             pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2s(new pcl::PointCloud<pcl::PointXYZRGBA>());
             (*c2s) = (*cloud);
-            if (crop)
-                cropCloud(c2s, 25);
 
             QString name = QString::fromStdString(path) + "\\" + QString::fromStdString(currentDateTime()) + ".pcd";
             cPrj->addCloud(c2s, name);
             cPrj->cIsSaved[cPrj->getCloudSize() - 1] = false;
+
+            if (cloud_swap == 0)
+            {
+                cloud_swap = c2s;
+                std::cout << "First cloud got." << std::endl;
+            }
+            else
+            {
+                cPrj->addCorrespondence(cPrj->getCloudSize() - 2, cPrj->getCloudSize() - 1);
+                cPrj->rMatrix[cPrj->getCorrespondenceSize() - 1] = matL3;
+                cloud_swap = c2s;
+                std::cout << "New cloud and the iteration correspondence are added." << std::endl;
+            }
+
+            if (crop)
+                cropCloud(c2s, 25);
+
             std::stringstream ss;
             ss << "One cloud captured : [" << cPrj->cPath[cPrj->getCloudSize() - 1].toStdString() << "]." << endl << "Total number of unsaved clouds : " << cPrj->getCloudSize() << ".";
             cloud_viewer_->updateText(ss.str(), 20, 20, 14, 0, 1, 1, "Status");
@@ -96,7 +125,7 @@ public:
                 if (cPrj->cIsSaved[i] == false)
                 {
                     cPrj->savePointCloudInProject(i, cPrj->cPath[i]);
-                    cPrj->cIsSaved[i] == true;
+                    cPrj->cIsSaved[i] = true;
                 }
             QString mark;
             cPrj->generateMark(mark);
@@ -176,7 +205,9 @@ public:
     boost::shared_ptr<pcl::visualization::PCLVisualizer> cloud_viewer_;
     pcl::Grabber& grabber_;
     boost::mutex cloud_mutex_;
-    CloudConstPtr cloud_;
+    CloudConstPtr cloud_, cloud_iter, cloud_swap;
+
+    Matrix4f matL1, matL2, matL3;
 };
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> cld;
