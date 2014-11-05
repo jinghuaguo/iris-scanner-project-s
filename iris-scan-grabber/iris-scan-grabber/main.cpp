@@ -100,11 +100,11 @@ public:
         return false;
     }
 
-    CloudPtr cloud_iter, cloud_realtime_last, cloud_swap;
+    CloudPtr cloud_iter, cloud_realtime_last;
     bool trackLost, shaking, shakingBefore, needRefreshOutput;
 
-    Matrix4f matL2, matL3;
-    unsigned int cloudClock;
+    Matrix4f matL1, matL2, matL3;
+    unsigned int cloudClock, stableClock;
 
     void cloud_callback(const CloudConstPtr& cloud)
     {
@@ -127,39 +127,48 @@ public:
                 (*c2t) = (*cloud);
                 if (cloud_realtime_last != 0)
                 {
-                    Matrix4f gsrResult;
-                    gsr.getGrayScaleRegMatrix(cloud_realtime_last, c2t, gsrResult);
-                    shaking = isShaking(gsrResult);
+                    gsr.getGrayScaleRegMatrix(cloud_realtime_last, c2t, matL1);
+                    shaking = isShaking(matL1);
                     if (shakingBefore != shaking)
                     {
-                        outputStream << "Capture state : \n" << (shaking ? "| SHAKING, or features are not enough." : "| Available for capture") << std::endl;
+                        outputStream << "Capture state : \n" << (shaking ? "| Shaking, or features are not enough." : "| Available for capture.") << std::endl;
                         shakingBefore = shaking;
+                        needRefreshOutput = true;
+                    }
 
-                        if (!shaking && cPrj->getCloudSize() > 0)
+                    if (shaking)
+                        trackLost = true;
+
+                    if (!shaking)
+                    {
+                        if (stableClock == 4)
                         {
+                            stableClock = 0;
+                            needRefreshOutput = true;
+                            outputStream << "Stable! " << std::endl;
                             if (cloud_iter != 0)
                             {
                                 gsr.getGrayScaleRegMatrix(cloud_iter, c2t, matL2);
-                                if (isIllegal(matL2))
+                                if (isShaking(matL2))
                                 {
-                                    cloud_iter = cPrj->cRaw[cPrj->getCloudSize() - 1];
-                                    matL2 = Identity4f;
-                                    matL3 = Identity4f;
-                                    outputStream << "Iteration track lost. Reset the tracking." << std::endl;
+                                    if (isIllegal(matL2))
+                                    {
+                                        matL2 = Identity4f;
+                                        outputStream << "Iteration track lost. Reset the tracking." << std::endl;
+                                        trackLost = true;
+                                    }
+                                    else
+                                    {
+                                        matL3 = matL2 * matL3;
+                                        outputStream << "Iteration track got." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
+                                        cloud_iter = c2t;
+                                        trackLost = false;
+                                    }
                                 }
-                                else
-                                {
-                                    matL3 = matL2 * matL3;
-                                    outputStream << "Iteration track got." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
-                                    cloud_iter = c2t;
-                                }
-                            }
-                            else
-                            {
-                                cloud_iter = c2t;
                             }
                         }
-                        needRefreshOutput = true;
+                        else
+                            stableClock++;
                     }
                 }
                 cloud_realtime_last = c2t;
@@ -175,18 +184,18 @@ public:
             cPrj->addCloud(c2s, name);
             cPrj->cIsSaved[cPrj->getCloudSize() - 1] = false;
 
-            if (!track || cloud_iter == 0 || matL3 == Identity4f)
-            {
-                cloud_iter = c2s;
-            }
-            else
+            if (track && !trackLost)
             {
                 cPrj->addCorrespondence(cPrj->getCloudSize() - 2, cPrj->getCloudSize() - 1);
                 cPrj->rMatrix[cPrj->getCorrespondenceSize() - 1] = matL3;
-                cloud_iter = c2s;
                 matL3 = Identity4f;
-                std::cout << "New cloud and the iteration correspondence are added." << std::endl;
+                outputStream.clear();
+                outputStream << "Capture state : \n" << (shaking ? "| Shaking, or features are not enough." : "| Available for capture.") << std::endl;
+                needRefreshOutput = true;
             }
+
+            if (track)
+                cloud_iter = c2s;
 
             if (crop)
                 cropCloud(c2s, 25);
@@ -287,6 +296,7 @@ public:
                     shakingBefore = true;
                     needRefreshOutput = true;
                     cloudClock = 0;
+                    stableClock = 0;
                 }
             }
         }
