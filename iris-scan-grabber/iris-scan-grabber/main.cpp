@@ -76,19 +76,64 @@ public:
 
     bool isShaking(Matrix4f &mat)
     {
+        if      (abs(mat(0) - 1) > 0.1 || abs(mat(5) - 1) > 0.1 || abs(mat(10) - 1) > 0.1 ||
+                 abs(mat(1)) > 0.05 || abs(mat(2)) > 0.05 || abs(mat(4)) > 0.05 || abs(mat(6)) > 0.05 ||
+                 abs(mat(8)) > 0.05 || abs(mat(9)) > 0.05 ||
+                 abs(mat(12)) > 0.07 || abs(mat(13)) > 0.07 || abs(mat(14)) > 0.07)
+            return true;
+
+        if (mat == Identity4f)
+            return true;
+        return false;
+    }
+
+    bool isIllegal(Matrix4f &mat)
+    {
         if      (abs(mat(0) - 1) > 0.5 || abs(mat(5) - 1) > 0.5 || abs(mat(10) - 1) > 0.5 ||
                  abs(mat(1)) > 0.3 || abs(mat(2)) > 0.3 || abs(mat(4)) > 0.3 || abs(mat(6)) > 0.3 ||
                  abs(mat(8)) > 0.3 || abs(mat(9)) > 0.3 ||
-                 abs(mat(12) - 1) > 0.5 || abs(mat(13) - 1) > 0.5 || abs(mat(14) - 1) > 0.5)
+                 abs(mat(12)) > 0.5 || abs(mat(13)) > 0.5 || abs(mat(14)) > 0.5)
             return true;
-        else
-            return false;
+
+        if (mat == Identity4f)
+            return true;
+        return false;
     }
 
     void cloud_callback(const CloudConstPtr& cloud)
     {
         boost::mutex::scoped_lock lock(cloud_mutex_);
         cloud_ = cloud;
+        if (cloudClock == 0xff)
+            cloudClock = 0;
+        else
+            cloudClock++;
+
+        if (track)
+        {
+            if (cloudClock % 4 == 0)
+            {
+                pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2t(new pcl::PointCloud<pcl::PointXYZRGBA>());
+                (*c2t) = (*cloud);
+                if (cloud_realtime_last != 0)
+                {
+                    Matrix4f gsrResult;
+                    GrayScaleRegistration gsr;
+                    gsr.getGrayScaleRegMatrix(cloud_realtime_last, c2t, gsrResult);
+                    shaking = isShaking(gsrResult);
+                }
+                cloud_realtime_last = c2t;
+            }
+
+            if (shakingBefore != shaking || trackLostBefore != trackLost)
+            {
+                std::stringstream ss;
+                ss << "Capture state : \n" << (shaking ? "SHAKING, or features are not enough." : "Available for Capture") << std::endl;
+                cloud_viewer_->updateText(ss.str(), 500, 20, 12, 0.6, 0.6, 0.6, "Para");
+                shakingBefore = shaking;
+                trackLostBefore = trackLost;
+            }
+        }
         if (capture)
         {
             pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2s(new pcl::PointCloud<pcl::PointXYZRGBA>());
@@ -98,7 +143,7 @@ public:
             cPrj->addCloud(c2s, name);
             cPrj->cIsSaved[cPrj->getCloudSize() - 1] = false;
 
-            if (cloud_swap == 0)
+            if (!track || cloud_swap == 0 || trackLost)
             {
                 cloud_swap = c2s;
                 std::cout << "First cloud got." << std::endl;
@@ -117,6 +162,7 @@ public:
             std::stringstream ss;
             ss << "One cloud captured : [" << cPrj->cPath[cPrj->getCloudSize() - 1].toStdString() << "]." << endl << "Total number of unsaved clouds : " << cPrj->getCloudSize() << ".";
             cloud_viewer_->updateText(ss.str(), 20, 20, 14, 0, 1, 1, "Status");
+            trackLost = false;
             capture = false;
         }
         if (save)
@@ -187,14 +233,20 @@ public:
                 {
                     cloud_viewer_->setPosition(150, 50);
                     cloud_viewer_->setSize(800, 600);
+                    cloud_viewer_->setShowFPS(false);
                     cloud_init = !cloud_init;
                 }
                 if (!cloud_viewer_->updatePointCloud(cloud, "OpenNICloud"))
                 {
                     cloud_viewer_->addText("IRIS Scan Grabber\nOne Component of IRIS Scan Handler.\n\nUsage : \nPress <SPACE> to capture,\nPress <ENTER> to save the captured,\nPress <Q> to leave without saving.", 20, 20, 14, 1, 1, 1, "Status");
+                    cloud_viewer_->addText("", 500, 20, 14, 0.6, 0.6, 0.6, "Para");
                     cloud_viewer_->setCameraPosition(0, 0, -5, 0, 1, 0);
                     cloud_viewer_->addPointCloud(cloud, "OpenNICloud");
                     cloud_viewer_->setWindowName("IRIS Scan Grabber");
+                    trackLost = false;
+                    trackLostBefore = false;
+                    shakingBefore = false;
+                    cloudClock = 0;
                 }
             }
         }
@@ -205,9 +257,12 @@ public:
     boost::shared_ptr<pcl::visualization::PCLVisualizer> cloud_viewer_;
     pcl::Grabber& grabber_;
     boost::mutex cloud_mutex_;
-    CloudConstPtr cloud_, cloud_iter, cloud_swap;
+    CloudConstPtr cloud_;
+    CloudPtr cloud_iter, cloud_realtime_last, cloud_swap;
+    bool trackLost, shaking, trackLostBefore, shakingBefore;
 
     Matrix4f matL1, matL2, matL3;
+    unsigned int cloudClock;
 };
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> cld;
