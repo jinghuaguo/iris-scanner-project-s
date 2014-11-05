@@ -77,9 +77,9 @@ public:
     bool isShaking(Matrix4f &mat)
     {
         if      (abs(mat(0) - 1) > 0.1 || abs(mat(5) - 1) > 0.1 || abs(mat(10) - 1) > 0.1 ||
-                 abs(mat(1)) > 0.05 || abs(mat(2)) > 0.05 || abs(mat(4)) > 0.05 || abs(mat(6)) > 0.05 ||
-                 abs(mat(8)) > 0.05 || abs(mat(9)) > 0.05 ||
-                 abs(mat(12)) > 0.07 || abs(mat(13)) > 0.07 || abs(mat(14)) > 0.07)
+                         abs(mat(1)) > 0.05 || abs(mat(2)) > 0.05 || abs(mat(4)) > 0.05 || abs(mat(6)) > 0.05 ||
+                         abs(mat(8)) > 0.05 || abs(mat(9)) > 0.05 ||
+                         abs(mat(12)) > 0.07 || abs(mat(13)) > 0.07 || abs(mat(14)) > 0.07)
             return true;
 
         if (mat == Identity4f)
@@ -90,9 +90,9 @@ public:
     bool isIllegal(Matrix4f &mat)
     {
         if      (abs(mat(0) - 1) > 0.5 || abs(mat(5) - 1) > 0.5 || abs(mat(10) - 1) > 0.5 ||
-                 abs(mat(1)) > 0.3 || abs(mat(2)) > 0.3 || abs(mat(4)) > 0.3 || abs(mat(6)) > 0.3 ||
-                 abs(mat(8)) > 0.3 || abs(mat(9)) > 0.3 ||
-                 abs(mat(12)) > 0.5 || abs(mat(13)) > 0.5 || abs(mat(14)) > 0.5)
+                 abs(mat(1)) > 0.4 || abs(mat(2)) > 0.4 || abs(mat(4)) > 0.4 || abs(mat(6)) > 0.4 ||
+                 abs(mat(8)) > 0.4 || abs(mat(9)) > 0.4 ||
+                 abs(mat(12)) > 1 || abs(mat(13)) > 1 || abs(mat(14)) > 1)
             return true;
 
         if (mat == Identity4f)
@@ -102,6 +102,8 @@ public:
 
     void cloud_callback(const CloudConstPtr& cloud)
     {
+        std::stringstream outputStream;
+
         boost::mutex::scoped_lock lock(cloud_mutex_);
         cloud_ = cloud;
         if (cloudClock == 0xff)
@@ -111,6 +113,8 @@ public:
 
         if (track)
         {
+            GrayScaleRegistration gsr;
+
             if (cloudClock % 4 == 0)
             {
                 pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2t(new pcl::PointCloud<pcl::PointXYZRGBA>());
@@ -118,22 +122,44 @@ public:
                 if (cloud_realtime_last != 0)
                 {
                     Matrix4f gsrResult;
-                    GrayScaleRegistration gsr;
                     gsr.getGrayScaleRegMatrix(cloud_realtime_last, c2t, gsrResult);
                     shaking = isShaking(gsrResult);
+                    if (shakingBefore != shaking)
+                    {
+                        outputStream << "Capture state : \n" << (shaking ? "| SHAKING, or features are not enough." : "| Available for capture") << std::endl;
+                        shakingBefore = shaking;
+
+                        if (!shaking && cPrj->getCloudSize() > 0)
+                        {
+                            if (cloud_iter != 0)
+                            {
+                                gsr.getGrayScaleRegMatrix(cloud_iter, c2t, matL2);
+                                if (isIllegal(matL2))
+                                {
+                                    cloud_iter = cPrj->cRaw[cPrj->getCloudSize() - 1];
+                                    matL2 = Identity4f;
+                                    matL3 = Identity4f;
+                                    outputStream << "Iteration track lost. Reset the tracking." << std::endl;
+                                }
+                                else
+                                {
+                                    matL3 = matL2 * matL3;
+                                    outputStream << "Iteration track got." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
+                                    cloud_iter = c2t;
+                                }
+                            }
+                            else
+                            {
+                                cloud_iter = c2t;
+                            }
+                        }
+                        needRefreshOutput = true;
+                    }
                 }
                 cloud_realtime_last = c2t;
             }
-
-            if (shakingBefore != shaking || trackLostBefore != trackLost)
-            {
-                std::stringstream ss;
-                ss << "Capture state : \n" << (shaking ? "SHAKING, or features are not enough." : "Available for Capture") << std::endl;
-                cloud_viewer_->updateText(ss.str(), 500, 20, 12, 0.6, 0.6, 0.6, "Para");
-                shakingBefore = shaking;
-                trackLostBefore = trackLost;
-            }
         }
+
         if (capture)
         {
             pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2s(new pcl::PointCloud<pcl::PointXYZRGBA>());
@@ -143,16 +169,16 @@ public:
             cPrj->addCloud(c2s, name);
             cPrj->cIsSaved[cPrj->getCloudSize() - 1] = false;
 
-            if (!track || cloud_swap == 0 || trackLost)
+            if (!track || cloud_iter == 0 || matL3 == Identity4f)
             {
-                cloud_swap = c2s;
-                std::cout << "First cloud got." << std::endl;
+                cloud_iter = c2s;
             }
             else
             {
                 cPrj->addCorrespondence(cPrj->getCloudSize() - 2, cPrj->getCloudSize() - 1);
                 cPrj->rMatrix[cPrj->getCorrespondenceSize() - 1] = matL3;
-                cloud_swap = c2s;
+                cloud_iter = c2s;
+                matL3 = Identity4f;
                 std::cout << "New cloud and the iteration correspondence are added." << std::endl;
             }
 
@@ -165,6 +191,7 @@ public:
             trackLost = false;
             capture = false;
         }
+
         if (save)
         {
             for (int i = 0; i < cPrj->getCloudSize(); i++)
@@ -189,6 +216,13 @@ public:
 
             cloud_viewer_->updateText("Save completed.", 20, 20, 14, 1, 1, 0, "Status");
             save = false;
+        }
+
+        if (needRefreshOutput)
+        {
+            if (outputStream.str() != "")
+                cloud_viewer_->updateText(outputStream.str(), 500, 20, 12, 0.6, 0.6, 0.6, "Para");
+            needRefreshOutput = false;
         }
     }
 
@@ -239,13 +273,13 @@ public:
                 if (!cloud_viewer_->updatePointCloud(cloud, "OpenNICloud"))
                 {
                     cloud_viewer_->addText("IRIS Scan Grabber\nOne Component of IRIS Scan Handler.\n\nUsage : \nPress <SPACE> to capture,\nPress <ENTER> to save the captured,\nPress <Q> to leave without saving.", 20, 20, 14, 1, 1, 1, "Status");
-                    cloud_viewer_->addText("", 500, 20, 14, 0.6, 0.6, 0.6, "Para");
+                    cloud_viewer_->addText(".", 500, 20, 8, 0, 0, 0, "Para");
                     cloud_viewer_->setCameraPosition(0, 0, -5, 0, 1, 0);
                     cloud_viewer_->addPointCloud(cloud, "OpenNICloud");
                     cloud_viewer_->setWindowName("IRIS Scan Grabber");
                     trackLost = false;
-                    trackLostBefore = false;
-                    shakingBefore = false;
+                    shakingBefore = true;
+                    needRefreshOutput = true;
                     cloudClock = 0;
                 }
             }
@@ -259,7 +293,7 @@ public:
     boost::mutex cloud_mutex_;
     CloudConstPtr cloud_;
     CloudPtr cloud_iter, cloud_realtime_last, cloud_swap;
-    bool trackLost, shaking, trackLostBefore, shakingBefore;
+    bool trackLost, shaking, shakingBefore, needRefreshOutput;
 
     Matrix4f matL1, matL2, matL3;
     unsigned int cloudClock;
