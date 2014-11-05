@@ -77,8 +77,8 @@ public:
     bool isShaking(Matrix4f &mat)
     {
         if      (abs(mat(0) - 1) > 0.1 || abs(mat(5) - 1) > 0.1 || abs(mat(10) - 1) > 0.1 ||
-                         abs(mat(1)) > 0.05 || abs(mat(2)) > 0.05 || abs(mat(4)) > 0.05 || abs(mat(6)) > 0.05 ||
-                         abs(mat(8)) > 0.05 || abs(mat(9)) > 0.05 ||
+                         abs(mat(1)) > 0.1 || abs(mat(2)) > 0.1 || abs(mat(4)) > 0.1 || abs(mat(6)) > 0.1 ||
+                         abs(mat(8)) > 0.1 || abs(mat(9)) > 0.1 ||
                          abs(mat(12)) > 0.07 || abs(mat(13)) > 0.07 || abs(mat(14)) > 0.07)
             return true;
 
@@ -89,7 +89,7 @@ public:
 
     bool isIllegal(Matrix4f &mat)
     {
-        if      (abs(mat(0) - 1) > 0.5 || abs(mat(5) - 1) > 0.5 || abs(mat(10) - 1) > 0.5 ||
+        if      (abs(mat(0) - 1) > 0.3 || abs(mat(5) - 1) > 0.3 || abs(mat(10) - 1) > 0.3 ||
                  abs(mat(1)) > 0.4 || abs(mat(2)) > 0.4 || abs(mat(4)) > 0.4 || abs(mat(6)) > 0.4 ||
                  abs(mat(8)) > 0.4 || abs(mat(9)) > 0.4 ||
                  abs(mat(12)) > 1 || abs(mat(13)) > 1 || abs(mat(14)) > 1)
@@ -99,6 +99,12 @@ public:
             return true;
         return false;
     }
+
+    CloudPtr cloud_iter, cloud_realtime_last, cloud_swap;
+    bool trackLost, shaking, shakingBefore, needRefreshOutput;
+
+    Matrix4f matL2, matL3;
+    unsigned int cloudClock;
 
     void cloud_callback(const CloudConstPtr& cloud)
     {
@@ -292,11 +298,6 @@ public:
     pcl::Grabber& grabber_;
     boost::mutex cloud_mutex_;
     CloudConstPtr cloud_;
-    CloudPtr cloud_iter, cloud_realtime_last, cloud_swap;
-    bool trackLost, shaking, shakingBefore, needRefreshOutput;
-
-    Matrix4f matL1, matL2, matL3;
-    unsigned int cloudClock;
 };
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> cld;
