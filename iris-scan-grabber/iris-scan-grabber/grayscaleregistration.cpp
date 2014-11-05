@@ -52,7 +52,7 @@ void GrayScaleRegistration::getGrayScaleRegMatrix(const CloudPtr &cloud_target, 
         this->getSURFDescriptors(cloud_source, keypointsSource, descriptorsSource, init_threshold);
 
         init_threshold /= 2;
-        if (init_threshold <= 5)
+        if (init_threshold <= 1)
         {
             matrix = Identity4f;
             return;
