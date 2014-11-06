@@ -77,9 +77,9 @@ public:
     bool isShaking(Matrix4f &mat)
     {
         if      (abs(mat(0) - 1) > 0.1 || abs(mat(5) - 1) > 0.1 || abs(mat(10) - 1) > 0.1 ||
-                         abs(mat(1)) > 0.1 || abs(mat(2)) > 0.1 || abs(mat(4)) > 0.1 || abs(mat(6)) > 0.1 ||
-                         abs(mat(8)) > 0.1 || abs(mat(9)) > 0.1 ||
-                         abs(mat(12)) > 0.07 || abs(mat(13)) > 0.07 || abs(mat(14)) > 0.07)
+                         abs(mat(1)) > 0.2 || abs(mat(2)) > 0.2 || abs(mat(4)) > 0.2 || abs(mat(6)) > 0.2 ||
+                         abs(mat(8)) > 0.2 || abs(mat(9)) > 0.2 ||
+                         abs(mat(12)) > 0.1 || abs(mat(13)) > 0.1 || abs(mat(14)) > 0.1)
             return true;
 
         if (mat == Identity4f)
@@ -106,6 +106,9 @@ public:
     Matrix4f matL1, matL2, matL3;
     unsigned int cloudClock, stableClock;
 
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2t[2];
+    unsigned char tFlag;
+
     void cloud_callback(const CloudConstPtr& cloud)
     {
         std::stringstream outputStream;
@@ -123,32 +126,35 @@ public:
 
             if (cloudClock % 4 == 0)
             {
-                pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2t(new pcl::PointCloud<pcl::PointXYZRGBA>());
-                (*c2t) = (*cloud);
-                if (cloud_realtime_last != 0)
+                (*c2t[tFlag]) = (*cloud);
+                if (c2t[tFlag ^ 1]->points.size() != 0)
                 {
-                    gsr.getGrayScaleRegMatrix(cloud_realtime_last, c2t, matL1);
+                    gsr.getGrayScaleRegMatrix(c2t[tFlag ^ 1], c2t[tFlag], matL1);
                     shaking = isShaking(matL1);
                     if (shakingBefore != shaking)
                     {
-                        outputStream << "Capture state : \n" << (shaking ? "| Shaking, or features are not enough." : "| Available for capture.") << std::endl;
+                        stableClock = 0;
                         shakingBefore = shaking;
                         needRefreshOutput = true;
                     }
 
                     if (shaking)
+                    {
                         trackLost = true;
+                    }
+
+                    outputStream << "Capture state : \n" << (shaking ? "| Shaking, or features are not enough." : "| Available for capture.") << std::endl;
 
                     if (!shaking)
                     {
-                        if (stableClock == 4)
+                        if (stableClock == 6)
                         {
                             stableClock = 0;
                             needRefreshOutput = true;
                             outputStream << "Stable! " << std::endl;
                             if (cloud_iter != 0)
                             {
-                                gsr.getGrayScaleRegMatrix(cloud_iter, c2t, matL2);
+                                gsr.getGrayScaleRegMatrix(cloud_iter, c2t[tFlag], matL2);
                                 if (isShaking(matL2))
                                 {
                                     if (isIllegal(matL2))
@@ -159,19 +165,26 @@ public:
                                     }
                                     else
                                     {
-                                        matL3 = matL2 * matL3;
-                                        outputStream << "Iteration track got." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
-                                        cloud_iter = c2t;
-                                        trackLost = false;
+                                            matL3 = matL2 * matL3;
+                                            outputStream << "Iteration track got." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
+                                            cloud_iter = c2t[tFlag];
+                                            trackLost = false;
                                     }
+                                }
+                                else
+                                {
+                                    outputStream << "Iteration track reserved." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
                                 }
                             }
                         }
                         else
+                        {
+                            outputStream << "Waiting for stable..." << std::endl;
                             stableClock++;
+                        }
                     }
                 }
-                cloud_realtime_last = c2t;
+                tFlag = tFlag ^ 1; //Invert
             }
         }
 
@@ -190,7 +203,6 @@ public:
                 cPrj->rMatrix[cPrj->getCorrespondenceSize() - 1] = matL3;
                 matL3 = Identity4f;
                 outputStream.clear();
-                outputStream << "Capture state : \n" << (shaking ? "| Shaking, or features are not enough." : "| Available for capture.") << std::endl;
                 needRefreshOutput = true;
             }
 
@@ -292,6 +304,11 @@ public:
                     cloud_viewer_->setCameraPosition(0, 0, -5, 0, 1, 0);
                     cloud_viewer_->addPointCloud(cloud, "OpenNICloud");
                     cloud_viewer_->setWindowName("IRIS Scan Grabber");
+                    OriCloudPtr mem(new OriCloud());
+                    c2t[0] = mem;
+                    OriCloudPtr mem2(new OriCloud());
+                    c2t[1] = mem2;
+                    tFlag = 0;
                     trackLost = false;
                     shakingBefore = true;
                     needRefreshOutput = true;
@@ -311,7 +328,7 @@ public:
 };
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> cld;
-bool save = false, capture = false, crop = true, track = true;
+bool save = false, capture = false, crop = true, track = false;
 
 std::string device_id("");
 std::string path("");
