@@ -26,10 +26,15 @@ IplImage* GrayScaleRegistration::getIplImage(const CloudPtr &input_cloud)
 
 void GrayScaleRegistration::getSURFDescriptors(const CloudPtr &cloud, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors)
 {
+    this->getSURFDescriptors(cloud, keypoints, descriptors, _GSRSurfThreshold);
+}
+
+void GrayScaleRegistration::getSURFDescriptors(const CloudPtr &cloud, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors, int surf_threshold)
+{
     IplImage *oriImage = getIplImage(cloud);
     IplImage *grayImage = cvCreateImage(cvGetSize(oriImage), IPL_DEPTH_8U, 1);
     cvCvtColor(oriImage, grayImage, CV_RGB2GRAY);
-    cv::SurfFeatureDetector detector(_GSRSurfThreshold);
+    cv::SurfFeatureDetector detector(surf_threshold);
     detector.detect(grayImage, keypoints);
     cv::SurfDescriptorExtractor extractor;
     extractor.compute(grayImage, keypoints, descriptors);
@@ -40,8 +45,19 @@ void GrayScaleRegistration::getGrayScaleRegMatrix(const CloudPtr &cloud_target, 
     cv::Mat descriptorsSource, descriptorsTarget;
     std::vector<cv::KeyPoint> keypointsSource, keypointsTarget;
 
-    this->getSURFDescriptors(cloud_target, keypointsTarget, descriptorsTarget);
-    this->getSURFDescriptors(cloud_source, keypointsSource, descriptorsSource);
+    int init_threshold = 500;
+    while (keypointsSource.size() < 10 || keypointsTarget.size() < 10)
+    {
+        this->getSURFDescriptors(cloud_target, keypointsTarget, descriptorsTarget, init_threshold);
+        this->getSURFDescriptors(cloud_source, keypointsSource, descriptorsSource, init_threshold);
+
+        init_threshold /= 2;
+        if (init_threshold <= 4)
+        {
+            matrix = Identity4f;
+            return;
+        }
+    }
 
     pcl::Correspondences correspondences;
 

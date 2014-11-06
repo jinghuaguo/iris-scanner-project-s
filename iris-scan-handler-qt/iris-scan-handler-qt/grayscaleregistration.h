@@ -14,6 +14,8 @@ public:
     IplImage *getIplImage(const CloudPtr &input_cloud);
     void getGrayScaleRegMatrix(const CloudPtr &cloud_target, const CloudPtr &cloud_source, Matrix4f &matrix);
     void getSURFDescriptors(const CloudPtr &cloud, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors);
+    void getSURFDescriptors(const CloudPtr &cloud, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors, int surf_threshold);
+
     double _GSRMaxRemoveDistanceThreshold;
     int _GSRSurfThreshold;
 };
