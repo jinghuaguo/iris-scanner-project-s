@@ -3,22 +3,16 @@
 #include <pcl/io/openni_grabber.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/boost.h>
-#include <pcl/visualization/image_viewer.h>
 #include <pcl/io/pcd_io.h>
-
-#include "stdafx.h"
-#include "project.h"
-#include "grayscaleregistration.h"
 
 #include <string>
 #include <sstream>
 #include <cmath>
 
-#include <QString>
-#include <QTextStream>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
+using namespace std;
+
+vector<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr> clouds;
+vector<string> names;
 
 const std::string currentDateTime()
 {
@@ -28,34 +22,6 @@ const std::string currentDateTime()
     tstruct = *localtime(&now);
     strftime(buf, sizeof(buf), "%Y %m %d %H %M %S", &tstruct);
     return buf;
-}
-
-Project *cPrj;
-
-void cropCloud(OriCloudPtr &c, int cropSize = 20)
-{
-    int w = c->width;
-    int h = c->height;
-    for (int i = 0; i < w; i++)
-        for (int j = 0; j < cropSize; j++)
-        {
-            c->points[j * w + i].z = sqrt(-1.0f);
-        }
-    for (int i = 0; i < w; i++)
-        for (int j = h - cropSize; j < h; j++)
-        {
-            c->points[j * w + i].z = sqrt(-1.0f);
-        }
-    for (int i = 0; i < cropSize; i++)
-        for (int j = 0; j < h; j++)
-        {
-            c->points[j * w + i].z = sqrt(-1.0f);
-        }
-    for (int i = w - cropSize; i < w; i++)
-        for (int j = 0; j < h; j++)
-        {
-            c->points[j * w + i].z = sqrt(-1.0f);
-        }
 }
 
 template <typename PointType>
@@ -69,187 +35,64 @@ public:
         : cloud_viewer_(new pcl::visualization::PCLVisualizer("Initalizing..."))
         , grabber_(grabber)
     {
-        matL1 = Identity4f;
-        matL2 = Identity4f;
-        matL3 = Identity4f;
     }
-
-    bool isShaking(Matrix4f &mat)
-    {
-        if      (abs(mat(0) - 1) > 0.1 || abs(mat(5) - 1) > 0.1 || abs(mat(10) - 1) > 0.1 ||
-                         abs(mat(1)) > 0.2 || abs(mat(2)) > 0.2 || abs(mat(4)) > 0.2 || abs(mat(6)) > 0.2 ||
-                         abs(mat(8)) > 0.2 || abs(mat(9)) > 0.2 ||
-                         abs(mat(12)) > 0.1 || abs(mat(13)) > 0.1 || abs(mat(14)) > 0.1)
-            return true;
-
-        if (mat == Identity4f)
-            return true;
-        return false;
-    }
-
-    bool isIllegal(Matrix4f &mat)
-    {
-        if      (abs(mat(0) - 1) > 0.3 || abs(mat(5) - 1) > 0.3 || abs(mat(10) - 1) > 0.3 ||
-                 abs(mat(1)) > 0.4 || abs(mat(2)) > 0.4 || abs(mat(4)) > 0.4 || abs(mat(6)) > 0.4 ||
-                 abs(mat(8)) > 0.4 || abs(mat(9)) > 0.4 ||
-                 abs(mat(12)) > 1 || abs(mat(13)) > 1 || abs(mat(14)) > 1)
-            return true;
-
-        if (mat == Identity4f)
-            return true;
-        return false;
-    }
-
-    CloudPtr cloud_iter, cloud_realtime_last;
-    bool trackLost, shaking, shakingBefore, needRefreshOutput;
-
-    Matrix4f matL1, matL2, matL3;
-    unsigned int cloudClock, stableClock;
-
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2t[2];
-    unsigned char tFlag;
 
     void cloud_callback(const CloudConstPtr& cloud)
     {
-        std::stringstream outputStream;
-
         boost::mutex::scoped_lock lock(cloud_mutex_);
         cloud_ = cloud;
-        if (cloudClock == 0xff)
-            cloudClock = 0;
-        else
-            cloudClock++;
-
-        if (track)
-        {
-            GrayScaleRegistration gsr;
-
-            if (cloudClock % 4 == 0)
-            {
-                (*c2t[tFlag]) = (*cloud);
-                if (c2t[tFlag ^ 1]->points.size() != 0)
-                {
-                    gsr.getGrayScaleRegMatrix(c2t[tFlag ^ 1], c2t[tFlag], matL1);
-                    shaking = isShaking(matL1);
-                    if (shakingBefore != shaking)
-                    {
-                        stableClock = 0;
-                        shakingBefore = shaking;
-                        needRefreshOutput = true;
-                    }
-
-                    if (shaking)
-                    {
-                        trackLost = true;
-                    }
-
-                    outputStream << "Capture state : \n" << (shaking ? "| Shaking, or features are not enough." : "| Available for capture.") << std::endl;
-
-                    if (!shaking)
-                    {
-                        if (stableClock == 6)
-                        {
-                            stableClock = 0;
-                            needRefreshOutput = true;
-                            outputStream << "Stable! " << std::endl;
-                            if (cloud_iter != 0)
-                            {
-                                gsr.getGrayScaleRegMatrix(cloud_iter, c2t[tFlag], matL2);
-                                if (isShaking(matL2))
-                                {
-                                    if (isIllegal(matL2))
-                                    {
-                                        matL2 = Identity4f;
-                                        outputStream << "Iteration track lost. Reset the tracking." << std::endl;
-                                        trackLost = true;
-                                    }
-                                    else
-                                    {
-                                            matL3 = matL2 * matL3;
-                                            outputStream << "Iteration track got." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
-                                            cloud_iter = c2t[tFlag];
-                                            trackLost = false;
-                                    }
-                                }
-                                else
-                                {
-                                    outputStream << "Iteration track reserved." << std::endl << "Current transform matrix : " << std::endl << matL3 << std::endl;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            outputStream << "Waiting for stable..." << std::endl;
-                            stableClock++;
-                        }
-                    }
-                }
-                tFlag = tFlag ^ 1; //Invert
-            }
-        }
-
         if (capture)
         {
-            pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c2s(new pcl::PointCloud<pcl::PointXYZRGBA>());
-            (*c2s) = (*cloud);
-
-            QString name = QString::fromStdString(path) + "\\" + QString::fromStdString(currentDateTime()) + ".pcd";
-            cPrj->addCloud(c2s, name);
-            cPrj->cIsSaved[cPrj->getCloudSize() - 1] = false;
-
-            if (track && !trackLost)
-            {
-                cPrj->addCorrespondence(cPrj->getCloudSize() - 2, cPrj->getCloudSize() - 1);
-                cPrj->rMatrix[cPrj->getCorrespondenceSize() - 1] = matL3;
-                matL3 = Identity4f;
-                outputStream.clear();
-                needRefreshOutput = true;
-            }
-
-            if (track)
-                cloud_iter = c2s;
-
+            pcl::PointCloud<pcl::PointXYZRGBA>::Ptr c(new pcl::PointCloud<pcl::PointXYZRGBA>());
+            (*c) = (*cloud);
             if (crop)
-                cropCloud(c2s, 25);
-
-            std::stringstream ss;
-            ss << "One cloud captured : [" << cPrj->cPath[cPrj->getCloudSize() - 1].toStdString() << "]." << endl << "Total number of unsaved clouds : " << cPrj->getCloudSize() << ".";
+            {
+                int w = c->width;
+                int h = c->height;
+                for (int i = 0; i < w; i++)
+                    for (int j = 0; j < 25; j++)
+                    {
+                        c->points[j * w + i].z = sqrt(-1.0f);
+                    }
+                for (int i = 0; i < w; i++)
+                    for (int j = h - 25; j < h; j++)
+                    {
+                        c->points[j * w + i].z = sqrt(-1.0f);
+                    }
+                for (int i = 0; i < 25; i++)
+                    for (int j = 0; j < h; j++)
+                    {
+                        c->points[j * w + i].z = sqrt(-1.0f);
+                    }
+                for (int i = w - 25; i < w; i++)
+                    for (int j = 0; j < h; j++)
+                    {
+                        c->points[j * w + i].z = sqrt(-1.0f);
+                    }
+            }
+            clouds.push_back(c);
+            names.push_back(currentDateTime());
+            stringstream ss;
+            ss << "One cloud captured : [" << names[names.size() - 1] << "]." << endl << "Total number of unsaved clouds : " << clouds.size() << ".";
+            cout << ss.str() << endl;
             cloud_viewer_->updateText(ss.str(), 20, 20, 14, 0, 1, 1, "Status");
-            trackLost = false;
             capture = false;
         }
-
         if (save)
         {
-            for (int i = 0; i < cPrj->getCloudSize(); i++)
-                if (cPrj->cIsSaved[i] == false)
-                {
-                    cPrj->savePointCloudInProject(i, cPrj->cPath[i]);
-                    cPrj->cIsSaved[i] = true;
-                }
-            QString mark;
-            cPrj->generateMark(mark);
-
-            QFile file(cPrj->name);
-            if (!file.open(QIODevice::WriteOnly))
+            stringstream saveList;
+            for (int i = 0; i < clouds.size(); i++)
             {
-                cloud_viewer_->updateText("Cannot save the project file.", 20, 20, 14, 1, 0, 0, "Status");
-                save = false;
-                return;
+                stringstream filename;
+                filename << path << (path != "" ? "\\" : "") << names[i] << ".pcd";
+                pcl::io::savePCDFileBinaryCompressed(filename.str(), *(clouds[i]));
+                saveList << filename.str() << "|";
             }
-
-            QTextStream ts(&file);
-            ts << mark;
-
+            clouds.clear();
+            names.clear();
+            cout << "> Saved |" << saveList.str() << endl;
             cloud_viewer_->updateText("Save completed.", 20, 20, 14, 1, 1, 0, "Status");
             save = false;
-        }
-
-        if (needRefreshOutput)
-        {
-            if (outputStream.str() != "")
-                cloud_viewer_->updateText(outputStream.str(), 500, 20, 12, 0.6, 0.6, 0.6, "Para");
-            needRefreshOutput = false;
         }
     }
 
@@ -292,28 +135,16 @@ public:
             {
                 if (!cloud_init)
                 {
-                    cloud_viewer_->setPosition(150, 50);
+                    cloud_viewer_->setPosition(300, 100);
                     cloud_viewer_->setSize(800, 600);
-                    cloud_viewer_->setShowFPS(false);
                     cloud_init = !cloud_init;
                 }
                 if (!cloud_viewer_->updatePointCloud(cloud, "OpenNICloud"))
                 {
                     cloud_viewer_->addText("IRIS Scan Grabber\nOne Component of IRIS Scan Handler.\n\nUsage : \nPress <SPACE> to capture,\nPress <ENTER> to save the captured,\nPress <Q> to leave without saving.", 20, 20, 14, 1, 1, 1, "Status");
-                    cloud_viewer_->addText(".", 500, 20, 8, 0, 0, 0, "Para");
                     cloud_viewer_->setCameraPosition(0, 0, -5, 0, 1, 0);
                     cloud_viewer_->addPointCloud(cloud, "OpenNICloud");
                     cloud_viewer_->setWindowName("IRIS Scan Grabber");
-                    OriCloudPtr mem(new OriCloud());
-                    c2t[0] = mem;
-                    OriCloudPtr mem2(new OriCloud());
-                    c2t[1] = mem2;
-                    tFlag = 0;
-                    trackLost = false;
-                    shakingBefore = true;
-                    needRefreshOutput = true;
-                    cloudClock = 0;
-                    stableClock = 0;
                 }
             }
         }
@@ -328,10 +159,10 @@ public:
 };
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> cld;
-bool save = false, capture = false, crop = true, track = false;
+bool save = false, capture = false, crop = true, track = true;
 
-std::string device_id("");
-std::string path("");
+string device_id("");
+string path("");
 
 int main(int argc, char **argv)
 {
@@ -342,7 +173,7 @@ int main(int argc, char **argv)
         {
             for (int i = 2; i < argc; i++)
             {
-                std::string arg(argv[i]);
+                string arg(argv[i]);
                 if (arg == "NoCrop")
                     crop = false;
                 else if (arg == "NoTrack")
@@ -360,9 +191,6 @@ int main(int argc, char **argv)
         cout << "No device found. Exiting..." << endl;
         return 0;
     }
-
-    QString name = QString::fromStdString(path) + "\\" + QString::fromStdString(currentDateTime()) + ".isproj";
-    cPrj = new Project(name);
 
     pcl::OpenNIGrabber grabber(device_id, depth_mode, image_mode);
     OpenNIViewer<pcl::PointXYZRGBA> openni_viewer(grabber);

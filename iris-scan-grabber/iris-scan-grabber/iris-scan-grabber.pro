@@ -5,11 +5,7 @@ CONFIG += qt
 
 QT       += core gui
 
-SOURCES += main.cpp \
-    grayscaleregistration.cpp \
-    project.cpp \
-    registration.cpp \
-    utils.cpp
+SOURCES += main.cpp
 
 #Additional Includes with PCL and OpenCV
 INCLUDEPATH+=   "C:/Program Files (x86)/Boost/include"
@@ -170,10 +166,3 @@ LIBS+=          "D:/Libraries/opencv/build/x86/vc10/lib/opencv_ts248.lib"
 LIBS+=          "D:/Libraries/opencv/build/x86/vc10/lib/opencv_video248.lib"
 LIBS+=          "D:/Libraries/opencv/build/x86/vc10/lib/opencv_videostab248.lib"
 }
-
-HEADERS += \
-    grayscaleregistration.h \
-    project.h \
-    registration.h \
-    stdafx.h \
-    utils.h

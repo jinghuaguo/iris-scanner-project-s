@@ -970,5 +970,21 @@ void MainWindow::onReturnRead()
 {
     QProcess *proc = (QProcess *)(sender());
     QString read = proc->readAll();
-    ui->txtInfo->append(read);
+
+    if (read[0] == '>')
+    {
+        QStringList cache = read.split('|');
+        QStringList paths;
+        for (int i = 1; i < cache.size() - 1; i++)
+        {
+            if (cache[i] != "")
+                paths.push_back(cache[i]);
+        }
+        addExternalClouds(paths);
+    }
+    else
+    {
+        ui->txtInfo->append(read);
+    }
+
 }
