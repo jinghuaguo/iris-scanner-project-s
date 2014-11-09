@@ -901,6 +901,13 @@ void MainWindow::on_lstCorrespondences_itemDoubleClicked(QListWidgetItem *item)
 void MainWindow::openGrabber()
 {
     updateStatus("Initalizing Grabber...");
+    QFile grabberBin("iris-scan-grabber.exe");
+    if (!grabberBin.exists())
+    {
+        QMessageBox::information(this, "Error", "The grabber binary file cannot be found.\nPlease reinstall the product.", QMessageBox::Ok);
+        updateStatus("Aborted.");
+        return;
+    }
     QProcess *proc = new QProcess(this);
     connect(proc, SIGNAL(readyRead()), this, SLOT(onReturnRead()));
     QStringList list;
@@ -913,7 +920,7 @@ void MainWindow::openGrabber()
     list.append(path);
     try
     {
-        proc->start("iris-scan-grabber.exe", list);
+        proc->start(grabberBin.fileName(), list);
     }
     catch (std::exception e)
     {
@@ -981,6 +988,11 @@ void MainWindow::onReturnRead()
                 paths.push_back(cache[i]);
         }
         addExternalClouds(paths);
+    }
+    else if (read.mid(0, 6) == "No dev")
+    {
+        QMessageBox::information(this, "Error", "No device found.\nPlease check the connection of the sensor, or consult the device support.", QMessageBox::Ok);
+        updateStatus("No device found. ");
     }
     else
     {
