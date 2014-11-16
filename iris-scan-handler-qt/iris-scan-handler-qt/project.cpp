@@ -2,6 +2,7 @@
 #include "utils.h"
 
 #include "QStringList"
+#include "QFileInfo"
 
 Project::Project(QString _name)
 {
@@ -235,12 +236,20 @@ int Project::readMark(QString mark)
     else if (split[0] == "CLOUD")
     {
         OriCloudPtr cloud(new OriCloud());
-        Utils::readSinglePointCloud(split[1].toStdString(), cloud);
-        this->addCloud(cloud, split[1]);
-        this->cIsSaved[this->getCloudSize() - 1] = true;
-        int para = split[2].toInt();
-        for (int i = 0; i < para; i++)
-            this->cKeyPoints[this->getCloudSize() - 1].push_back(split[3 + i].toInt());
+        QFileInfo fi(split[1]);
+        if (fi.exists())
+        {
+            Utils::readSinglePointCloud(split[1].toStdString(), cloud);
+            this->addCloud(cloud, split[1]);
+            this->cIsSaved[this->getCloudSize() - 1] = true;
+            int para = split[2].toInt();
+            for (int i = 0; i < para; i++)
+                this->cKeyPoints[this->getCloudSize() - 1].push_back(split[3 + i].toInt());
+        }
+        else
+        {
+            return -1; // File not exist.
+        }
     }
     else if (split[0] == "CORRESPONDENCE")
     {

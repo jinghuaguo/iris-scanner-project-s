@@ -179,7 +179,12 @@ void MainWindow::openProject(QString path)
     QTextStream in(&file);
     while (!in.atEnd())
     {
-        newPrj->readMark(in.readLine());
+        if (newPrj->readMark(in.readLine()) != 0)
+        {
+            updateStatus("An error occoured while loading the project.");
+            refresh();
+            return;
+        }
     }
 
     delete this->cPrj;
