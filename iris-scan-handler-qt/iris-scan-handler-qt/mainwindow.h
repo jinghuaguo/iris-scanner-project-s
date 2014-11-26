@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "stdafx.h"
+#include "typedef.h"
 #include "viewhandler.h"
 #include "project.h"
 #include "registration.h"
@@ -43,6 +43,8 @@ public:
     GrayScaleRegistration *gsr;
     Surface *surface;
     Registration *reg;
+
+    char *initFilePath;
 
 public slots:
     void refresh();

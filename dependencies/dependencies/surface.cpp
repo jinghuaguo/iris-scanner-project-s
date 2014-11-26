@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "surface.h"
 
 Surface::Surface() :
@@ -26,10 +25,10 @@ int Surface::GP3(const NormalCloudPtr &cloud_in, const pcl::PolygonMeshPtr &mesh
     return 0;
 }
 
-int Surface::mlsSmooth(const OriCloudPtr &cloud_in, const NormalCloudPtr &cloud_out)
+int Surface::mlsSmooth(const CloudPtr &cloud_in, const NormalCloudPtr &cloud_out)
 {
-    pcl::search::KdTree<OriPoint>::Ptr tree(new pcl::search::KdTree<OriPoint>);
-    pcl::MovingLeastSquares<OriPoint, NormalPoint> mls;
+    pcl::search::KdTree<Point>::Ptr tree(new pcl::search::KdTree<Point>);
+    pcl::MovingLeastSquares<Point, NormalPoint> mls;
     mls.setComputeNormals(true);
     mls.setInputCloud(cloud_in);
     mls.setPolynomialFit(true);

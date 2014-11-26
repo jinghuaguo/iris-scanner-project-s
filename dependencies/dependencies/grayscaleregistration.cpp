@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "grayscaleregistration.h"
 
 GrayScaleRegistration::GrayScaleRegistration()

@@ -4,13 +4,15 @@
 #include "QStringList"
 #include "QFileInfo"
 
+#define ISProjMaxVersion 0.2
+
 Project::Project(QString _name)
 {
     this->name = _name;
     this->isSaved = true;
 }
 
-int Project::addCloud(const OriCloudPtr &p, QString &name, bool forceCheckRepeat, bool addCopy)
+int Project::addCloud(const CloudPtr &p, QString &name, bool forceCheckRepeat, bool addCopy)
 {
     if (forceCheckRepeat)
     {
@@ -235,7 +237,7 @@ int Project::readMark(QString mark)
     }
     else if (split[0] == "CLOUD")
     {
-        OriCloudPtr cloud(new OriCloud());
+        CloudPtr cloud(new Cloud());
         QFileInfo fi(split[1]);
         if (fi.exists())
         {

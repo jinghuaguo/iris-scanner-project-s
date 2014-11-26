@@ -1,9 +1,11 @@
 #ifndef GRAYSCALEREGISTRATION_H
 #define GRAYSCALEREGISTRATION_H
 
-#include "stdafx.h"
+#include "typedef.h"
 #include "utils.h"
 #include "registration.h"
+
+#include <vector>
 #include <opencv2/opencv.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 

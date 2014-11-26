@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "typedef.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "settingwindow.h"
@@ -16,8 +16,6 @@
 #include "QList"
 #include "QCloseEvent"
 #include "QProcess"
-
-extern char *file_path;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -71,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Viewer
     ViewHandler *vh(new ViewHandler(this));
+    vh->parent = this;
     this->setCentralWidget(vh);
     this->viewer = &(vh->viewer);
     this->vh = vh;
@@ -86,10 +85,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->dockInfo->hide();
 
     //Project
-    if (file_path[0] == 0)
+    if (initFilePath[0] == 0)
         this->newProject();
     else
-        this->openProject(QString::fromAscii(file_path));
+        this->openProject(QString::fromAscii(initFilePath));
 }
 
 MainWindow::~MainWindow()
@@ -240,7 +239,7 @@ void MainWindow::addExternalClouds(QStringList paths)
     vh->showFusedProcessList = false;
     for (auto i = paths.begin(); i != paths.end(); i++)
     {
-        OriCloudPtr p(new OriCloud());
+        CloudPtr p(new Cloud());
         QString name = *i;
         this->updateStatus("Reading point cloud " + name + " ...");
         Utils::readSinglePointCloud(name.toStdString(), p);
@@ -330,7 +329,7 @@ void MainWindow::refresh()
 void MainWindow::addSphereforKeyPoint(int i, int j)
 {
     double r, g, b;
-    Utils::getColorFromChart(j, r, g, b);
+    Utils::getColorFromColorChart(j, r, g, b);
     if (cPrj->getCloudSize() > i)
         viewer->addSphere(cPrj->cRaw[i]->points[cPrj->cKeyPoints[i][j]],
                 0.03, r, g, b, QString::number(i * cPrj->getCloudSize() + j).toStdString());
@@ -353,7 +352,7 @@ void MainWindow::refreshViewerContents()
                 for (int i = 0; i < cPrj->procClouds.size(); i++)
                     if (i < cPrj->procClouds.size())
                     {
-                        OriCloudPtr transCloud(new OriCloud());
+                        CloudPtr transCloud(new Cloud());
                         updateStatus("Transforming and Rendering Point Cloud " + cPrj->cPath[cPrj->procClouds[i]] + " ...");
                         Utils::transformPointCloud(cPrj->cRaw[cPrj->procClouds[i]], transCloud, cPrj->getTransformMatrix(cPrj->procClouds[0], cPrj->procClouds[i]));
                         updateStatus("Rendering Point Cloud " + cPrj->cPath[cPrj->procClouds[i]] + " ...");
@@ -544,7 +543,7 @@ void MainWindow::removeCurrentSelectedClouds()
 
 void MainWindow::doGrayScaleReg()
 {
-    OriCloudPtr cloud_t, cloud_s;
+    CloudPtr cloud_t, cloud_s;
     for (int i = 0; i < cPrj->procClouds.size() - 1; i++)
     {
         updateStatus("Registrating Cloud #" + QString::number(cPrj->procClouds[i] + 1) + " with Cloud #" + QString::number(cPrj->procClouds[i + 1] + 1) + " by Gray Scale Registration...");
@@ -602,7 +601,7 @@ void MainWindow::doDownSample()
 
 void MainWindow::doICPReg()
 {
-    OriCloudPtr cloud_t, cloud_s;
+    CloudPtr cloud_t, cloud_s;
     for (int i = 0; i < cPrj->procClouds.size() - 1; i++)
     {
         updateStatus("Registrating Cloud #" + QString::number(cPrj->procClouds[i] + 1) + " with Cloud #" + QString::number(cPrj->procClouds[i + 1] + 1) + " by ICP...");
@@ -635,7 +634,7 @@ void MainWindow::doICPReg()
 
 void MainWindow::doKeyPointReg()
 {
-    OriCloudPtr cloud_t, cloud_s;
+    CloudPtr cloud_t, cloud_s;
     for (int i = 0; i < cPrj->procClouds.size() - 1; i++)
     {
         updateStatus("Registrating Cloud #" + QString::number(cPrj->procClouds[i] + 1) + " with Cloud #" + QString::number(cPrj->procClouds[i + 1] + 1) + " by Manual Keypoints...");
@@ -674,7 +673,7 @@ void MainWindow::createCopy()
     QString name;
     for (int i = 0; i < cPrj->procClouds.size(); i++)
     {
-        OriCloudPtr p(new OriCloud());
+        CloudPtr p(new Cloud());
         pcl::copyPointCloud(*cPrj->cRaw[cPrj->procClouds[i]], *p);
         name = cPrj->cPath[cPrj->procClouds[i]] + " [Copy]";
         cPrj->addCloud(p, name);
@@ -685,7 +684,7 @@ void MainWindow::createCopy()
 
 void MainWindow::doCombine()
 {
-    OriCloudPtr combineCloud(new OriCloud());
+    CloudPtr combineCloud(new Cloud());
     if (cPrj->procClouds.size() >= 1)
     {
         updateStatus("Rebuild the graph based on Cloud #" + cPrj->cPath[cPrj->procClouds[0]] + " ...");
@@ -695,7 +694,7 @@ void MainWindow::doCombine()
         {
             if (i < cPrj->procClouds.size())
             {
-                OriCloudPtr transCloud(new OriCloud());
+                CloudPtr transCloud(new Cloud());
                 updateStatus("Transforming Point Cloud " + cPrj->cPath[cPrj->procClouds[i]] + " ...");
                 Utils::transformPointCloud(cPrj->cRaw[cPrj->procClouds[i]], transCloud, cPrj->getTransformMatrix(cPrj->procClouds[0], cPrj->procClouds[i]));
                 *combineCloud += *transCloud;

@@ -1,9 +1,12 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#include "stdafx.h"
+#include "typedef.h"
 #include "QString"
 #include "QList"
+
+#include "pcl/PolygonMesh.h"
+#include "pcl/point_types.h"
 
 class Project
 {
@@ -14,7 +17,7 @@ public:
     QList<int> procClouds;
 
     //Clouds
-    QList<OriCloudPtr> cRaw;
+    QList<CloudPtr> cRaw;
     QList<QString> cPath;
     QList<QList<int>> cKeyPoints;
     QList<bool> cIsSaved;
@@ -34,7 +37,7 @@ public:
     bool isSaved;
 
     Project(QString _name);
-    int addCloud(const OriCloudPtr &p, QString &name, bool forceCheckRepeat = true, bool addCopy = true);
+    int addCloud(const CloudPtr &p, QString &name, bool forceCheckRepeat = true, bool addCopy = true);
     int addCorrespondence(int target, int source, bool isTopo = false, bool forceCheckRepeat = true);
     int addMesh(const int index);
     int getCloudSize();

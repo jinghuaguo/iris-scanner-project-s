@@ -1,8 +1,5 @@
-#include "stdafx.h"
+#include "typedef.h"
 #include "viewhandler.h"
-#include "mainwindow.h"
-
-extern MainWindow *w_ptr;
 
 ViewHandler::ViewHandler()
 {
@@ -22,7 +19,7 @@ void ViewHandler::pointPickingEvent(const pcl::visualization::PointPickingEvent 
     {
         float x, y, z;
         event.getPoint(x, y, z);
-        w_ptr->handlePickedPoint(x, y, z);
+        this->parent->handlePickedPoint(x, y, z);
     }
 }
 

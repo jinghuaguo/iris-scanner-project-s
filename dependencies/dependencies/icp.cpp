@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "icp.h"
 
 ICP::ICP()
@@ -11,22 +10,19 @@ ICP::ICP()
     this->_GetNormalKSearch = 15;
 }
 
-int ICP::align(const OriCloudPtr &target_ori, const OriCloudPtr &source_ori, Eigen::Matrix4f &align_result)
+int ICP::align(const CloudPtr &target_ori, const CloudPtr &source_ori, Eigen::Matrix4f &align_result)
 {
-    OriCloudPtr target(new OriCloud()); OriCloudPtr source(new OriCloud());
+    CloudPtr target(new Cloud()); CloudPtr source(new Cloud());
     pcl::copyPointCloud(*target_ori, *target);
     pcl::copyPointCloud(*source_ori, *source);
-    std::cout << "Downsampling point clouds..." << std::endl;
     Utils::downSamplePointCloud(target, target, _ICPDownSampleLeafSize);
     Utils::downSamplePointCloud(source, source, _ICPDownSampleLeafSize);
-    std::cout << "Estimating Normals..." << std::endl;
     NormalCloudPtr nc_t(new NormalCloud);
     NormalCloudPtr nc_s(new NormalCloud);
-    pcl::copyPointCloud<OriPoint, NormalPoint>((*target), (*nc_t));
-    pcl::copyPointCloud<OriPoint, NormalPoint>((*source), (*nc_s));
+    pcl::copyPointCloud<Point, NormalPoint>((*target), (*nc_t));
+    pcl::copyPointCloud<Point, NormalPoint>((*source), (*nc_s));
     ICP::getNormal(target, nc_t);
     ICP::getNormal(source, nc_s);
-    std::cout << "Aligning..." << std::endl;
     pcl::IterativeClosestPointNonLinear<NormalPoint, NormalPoint> reg;
     reg.setTransformationEpsilon(_ICPTransformEpsilon);
     reg.setMaxCorrespondenceDistance(_ICPMaxCorrespondenceDistance);
@@ -37,7 +33,6 @@ int ICP::align(const OriCloudPtr &target_ori, const OriCloudPtr &source_ori, Eig
     reg.setMaximumIterations(_ICPIterationTimesPer);
     for (int i = 0; i < _ICPIterationTimes; ++i)
     {
-        //std::cout << "Iteration #" << i + 1 << " ..." << std::endl;
         nc_s = reg_result;
         reg.setInputSource(nc_s);
         reg.align(*reg_result);
@@ -50,17 +45,17 @@ int ICP::align(const OriCloudPtr &target_ori, const OriCloudPtr &source_ori, Eig
     return 0;
 }
 
-int ICP::getNormal(const OriCloudPtr &cloud_in, NormalCloudPtr &cloud_out)
+int ICP::getNormal(const CloudPtr &cloud_in, NormalCloudPtr &cloud_out)
 {
-    pcl::search::KdTree<OriPoint>::Ptr tree(new pcl::search::KdTree<OriPoint>());
+    pcl::search::KdTree<Point>::Ptr tree(new pcl::search::KdTree<Point>());
     getNormal(cloud_in, cloud_out, tree);
     return 0;
 }
 
-int ICP::getNormal(const OriCloudPtr &cloud_in, NormalCloudPtr &cloud_out, pcl::search::KdTree<OriPoint>::Ptr &tree)
+int ICP::getNormal(const CloudPtr &cloud_in, NormalCloudPtr &cloud_out, pcl::search::KdTree<Point>::Ptr &tree)
 {
     tree->setInputCloud(cloud_in);
-    pcl::NormalEstimation<OriPoint, NormalPoint> norm_est;
+    pcl::NormalEstimation<Point, NormalPoint> norm_est;
     norm_est.setSearchMethod(tree);
     norm_est.setKSearch(_GetNormalKSearch);
     norm_est.setInputCloud(cloud_in);

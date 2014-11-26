@@ -3,8 +3,6 @@
 #include "QDialogButtonBox"
 #include "QMessageBox"
 
-extern MainWindow *w_ptr;
-
 SettingWindow::SettingWindow(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingWindow)
@@ -12,10 +10,10 @@ SettingWindow::SettingWindow(QWidget *parent) :
     ui->setupUi(this);
 
     //load parameters.
-    icp = w_ptr->icp;
-    gsr = w_ptr->gsr;
-    surface = w_ptr->surface;
-    reg = w_ptr->reg;
+    icp = parent->icp;
+    gsr = parent->gsr;
+    surface = parent->surface;
+    reg = parent->reg;
 
     resetToOriginal();
 }
