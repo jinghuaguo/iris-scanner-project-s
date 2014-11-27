@@ -1,5 +1,6 @@
 #include "typedef.h"
 #include "viewhandler.h"
+#include "mainwindow.h"
 
 ViewHandler::ViewHandler()
 {
@@ -19,7 +20,7 @@ void ViewHandler::pointPickingEvent(const pcl::visualization::PointPickingEvent 
     {
         float x, y, z;
         event.getPoint(x, y, z);
-        this->parent->handlePickedPoint(x, y, z);
+        mainWindowPtr->handlePickedPoint(x, y, z);
     }
 }
 

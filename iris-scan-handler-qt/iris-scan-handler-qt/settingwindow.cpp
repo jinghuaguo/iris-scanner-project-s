@@ -3,6 +3,8 @@
 #include "QDialogButtonBox"
 #include "QMessageBox"
 
+#include "mainwindow.h"
+
 SettingWindow::SettingWindow(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingWindow)
@@ -10,10 +12,10 @@ SettingWindow::SettingWindow(QWidget *parent) :
     ui->setupUi(this);
 
     //load parameters.
-    icp = parent->icp;
-    gsr = parent->gsr;
-    surface = parent->surface;
-    reg = parent->reg;
+    icp = mainWindowPtr->icp;
+    gsr = mainWindowPtr->gsr;
+    surface = mainWindowPtr->surface;
+    reg = mainWindowPtr->reg;
 
     resetToOriginal();
 }
@@ -98,7 +100,7 @@ void SettingWindow::on_buttonBox_clicked(QAbstractButton *button)
     case QDialogButtonBox::RestoreDefaults:
         reply = QMessageBox::question(this, tr("Restore all settings"), tr("Are you sure to restore all settings to defaults?"), QMessageBox::Yes | QMessageBox::No);
         if (reply == QMessageBox::Yes)
-            resetToOriginal();
+            restoreToDefaults();
         break;
     default:
 

@@ -2,14 +2,17 @@
 #include <QApplication>
 #include "typedef.h"
 
+char *initFilePath = "";
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    char *file_path = "";
     if (argc == 2)
-        file_path = argv[1];
-    MainWindow w;
-    w.initFilePath = file_path;
-    w.show();
+        initFilePath = argv[1];
+
+    std::cout << initFilePath << std::endl;
+
+    MainWindow *w(new MainWindow());
+    w->show();
     return a.exec();
 }

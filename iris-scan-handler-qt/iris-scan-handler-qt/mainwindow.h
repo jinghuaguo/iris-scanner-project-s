@@ -13,6 +13,8 @@
 #include "grayscaleregistration.h"
 #include "surface.h"
 
+#include <pcl/visualization/pcl_visualizer.h>
+
 #endif
 
 #include <QMainWindow>
@@ -43,8 +45,6 @@ public:
     GrayScaleRegistration *gsr;
     Surface *surface;
     Registration *reg;
-
-    char *initFilePath;
 
 public slots:
     void refresh();
@@ -100,5 +100,8 @@ private slots:
     void showSettings();
     void onReturnRead();
 };
+
+extern MainWindow *mainWindowPtr;
+extern char *initFilePath;
 
 #endif // MAINWINDOW_H

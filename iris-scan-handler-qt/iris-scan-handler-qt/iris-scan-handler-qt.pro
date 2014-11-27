@@ -11,35 +11,34 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = iris-scan-handler-qt
 TEMPLATE = app
 
-
 SOURCES += main.cpp\
         mainwindow.cpp \
     project.cpp \
     viewhandler.cpp \
     settingwindow.cpp \
-    ../../dependencies/dependencies/grayscaleregistration.cpp \
-    ../../dependencies/dependencies/icp.cpp \
-    ../../dependencies/dependencies/registration.cpp \
-    ../../dependencies/dependencies/surface.cpp \
-    ../../dependencies/dependencies/utils.cpp
+    ../../dependencies/grayscaleregistration.cpp \
+    ../../dependencies/icp.cpp \
+    ../../dependencies/registration.cpp \
+    ../../dependencies/surface.cpp \
+    ../../dependencies/utils.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
     viewhandler.h \
     settingwindow.h \
-    ../../dependencies/dependencies/grayscaleregistration.h \
-    ../../dependencies/dependencies/icp.h \
-    ../../dependencies/dependencies/registration.h \
-    ../../dependencies/dependencies/surface.h \
-    ../../dependencies/dependencies/typedef.h \
-    ../../dependencies/dependencies/utils.h
+    ../../dependencies/grayscaleregistration.h \
+    ../../dependencies/icp.h \
+    ../../dependencies/registration.h \
+    ../../dependencies/surface.h \
+    ../../dependencies/typedef.h \
+    ../../dependencies/utils.h
 
 FORMS    += mainwindow.ui \
     settingwindow.ui
 
 RC_FILE = resources.rc
 
-INCLUDEPATH+=   "../../dependencies/dependencies"
+INCLUDEPATH+=   "../../dependencies"
 
 #Additional Includes with PCL and OpenCV
 INCLUDEPATH+=   "C:/Program Files (x86)/Boost/include"

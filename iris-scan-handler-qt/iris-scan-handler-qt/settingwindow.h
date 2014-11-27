@@ -4,8 +4,6 @@
 #include <QDialog>
 #include "QAbstractButton"
 
-#include "mainwindow.h"
-
 #ifndef Q_MOC_RUN
 
 #include "icp.h"

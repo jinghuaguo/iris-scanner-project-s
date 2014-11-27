@@ -17,6 +17,8 @@
 #include "QCloseEvent"
 #include "QProcess"
 
+MainWindow *mainWindowPtr = 0;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -25,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     surface(new Surface()),
     reg(new Registration())
 {
+    mainWindowPtr = this;
+
     ui->setupUi(this);
     //this->setWindowState(Qt::WindowState::WindowMaximized);
     this->cPrj = 0;
@@ -69,7 +73,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Viewer
     ViewHandler *vh(new ViewHandler(this));
-    vh->parent = this;
     this->setCentralWidget(vh);
     this->viewer = &(vh->viewer);
     this->vh = vh;
@@ -85,6 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->dockInfo->hide();
 
     //Project
+    std::cout << initFilePath << std::endl;
+
     if (initFilePath[0] == 0)
         this->newProject();
     else
