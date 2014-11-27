@@ -1,4 +1,5 @@
 #include "grayscaleregistration.h"
+#include "registration.h"
 
 GrayScaleRegistration::GrayScaleRegistration()
 {
@@ -44,7 +45,7 @@ void GrayScaleRegistration::getGrayScaleRegMatrix(const CloudPtr &cloud_target, 
     cv::Mat descriptorsSource, descriptorsTarget;
     std::vector<cv::KeyPoint> keypointsSource, keypointsTarget;
 
-    int init_threshold = 500;
+    int init_threshold = _GSRSurfThreshold;
     while (keypointsSource.size() < 10 || keypointsTarget.size() < 10)
     {
         this->getSURFDescriptors(cloud_target, keypointsTarget, descriptorsTarget, init_threshold);
