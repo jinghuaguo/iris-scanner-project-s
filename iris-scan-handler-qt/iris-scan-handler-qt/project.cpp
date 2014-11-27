@@ -230,7 +230,7 @@ int Project::readMark(QString mark)
     if (split[0] == "VERSION")
     {
         double para = split[1].toDouble();
-        if (para < ISProjMaxVersion)
+        if (para > ISProjMaxVersion)
         {
             return -6; // Version is too high
         }
