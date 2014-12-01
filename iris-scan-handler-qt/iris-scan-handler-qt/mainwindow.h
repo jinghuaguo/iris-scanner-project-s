@@ -67,7 +67,7 @@ private slots:
     void newProject();
     void manageNewProject();
     void manageOpenProject();
-    void openProject(QString path);
+    int openProject(QString path);
     void addSelToProc();
     void on_lstPointClouds_itemSelectionChanged();
     void importFile();

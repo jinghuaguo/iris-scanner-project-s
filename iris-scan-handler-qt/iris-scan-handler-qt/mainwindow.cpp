@@ -88,12 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->dockInfo->hide();
 
     //Project
-    std::cout << initFilePath << std::endl;
-
-    if (initFilePath[0] == 0)
+    if (initFilePath[0] == 0 || this->openProject(QString::fromAscii(initFilePath)) != 0)
         this->newProject();
-    else
-        this->openProject(QString::fromAscii(initFilePath));
 }
 
 MainWindow::~MainWindow()
@@ -167,7 +163,7 @@ void MainWindow::manageOpenProject()
     }
 }
 
-void MainWindow::openProject(QString path)
+int MainWindow::openProject(QString path)
 {
     updateStatus("Opening " + path + " ...");
 
@@ -177,7 +173,7 @@ void MainWindow::openProject(QString path)
     if (!file.open(QIODevice::ReadWrite))
     {
         updateStatus("Cannot open file : " + file.errorString());
-        return;
+        return -6;
     }
 
     QTextStream in(&file);
@@ -185,9 +181,7 @@ void MainWindow::openProject(QString path)
     {
         if (newPrj->readMark(in.readLine()) != 0)
         {
-            updateStatus("An error occoured while loading the project.");
-            refresh();
-            return;
+            QMessageBox::information(this, "Error", "An error occoured while loading the project. \nThe project would be open continuously, but the result and the stability cannot be guaranteed.", QMessageBox::Ok);
         }
     }
 
@@ -198,6 +192,7 @@ void MainWindow::openProject(QString path)
     updateStatus(path + " Open Successfully.");
     cPrj->isSaved = true;
     refresh();
+    return 0;
 }
 
 void MainWindow::addSelToProc()
@@ -462,7 +457,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (cPrj == NULL || cPrj->isSaved || !stayOpen())
     {
-        std::cout << "Closing..." << std::endl;
         viewer->removeAllPointClouds();
         viewer->removeAllShapes();
         viewer->close();
