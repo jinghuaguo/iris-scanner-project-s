@@ -531,8 +531,9 @@ void MainWindow::removeCurrentSelectedClouds()
         {
             if (cPrj->procClouds[j] == cPrj->selClouds[i] - i)
                 cPrj->procClouds.erase(cPrj->procClouds.begin() + j);
-            else if (cPrj->procClouds[j] > cPrj->selClouds[i] - i)
-                cPrj->procClouds[j]--;
+            if (j < cPrj->procClouds.count())
+                if (cPrj->procClouds[j] > cPrj->selClouds[i] - i)
+                    cPrj->procClouds[j]--;
         }
         cPrj->removeCloud(cPrj->selClouds[i] - i);
     }
