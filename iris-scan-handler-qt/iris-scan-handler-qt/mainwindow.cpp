@@ -17,6 +17,8 @@
 #include "QCloseEvent"
 #include "QProcess"
 
+#include <ctime>
+
 MainWindow *mainWindowPtr = 0;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -332,7 +334,7 @@ void MainWindow::addSphereforKeyPoint(int i, int j)
     Utils::getColorFromColorChart(j, r, g, b);
     if (cPrj->getCloudSize() > i)
         viewer->addSphere(cPrj->cRaw[i]->points[cPrj->cKeyPoints[i][j]],
-                0.03, r, g, b, QString::number(i * cPrj->getCloudSize() + j).toStdString());
+                0.03, r, g, b, QString::number((clock() * i * (2 << 10) + j) % (2 << 24)).toStdString());
 }
 
 void MainWindow::refreshViewerContents()
