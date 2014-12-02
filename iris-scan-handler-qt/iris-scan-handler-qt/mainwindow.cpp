@@ -294,7 +294,11 @@ void MainWindow::refreshLists(bool updateViewer = true)
         strBuf += cPrj->cIsSaved[i] ? " " : "*";
         strBuf += " " + cPrj->cPath[i];
         strBuf += (cPrj->cAttachMesh[i] == -1) ? " " : " [Mesh]";
-        ui->lstPointClouds->addItem(strBuf);
+        //ui->lstPointClouds->addItem(strBuf);
+
+        QListWidgetItem *newItem = new QListWidgetItem(strBuf, ui->lstPointClouds);
+        newItem->setFlags(newItem->flags() | Qt::ItemIsUserCheckable);
+        newItem->setCheckState(Qt::Unchecked);
     }
 
     ui->lstCorrespondences->clear();
