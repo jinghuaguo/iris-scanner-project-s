@@ -17,6 +17,6 @@ int main(int argc, char *argv[])
     if ((*returnVal) != 0)
         std::cerr << "An error occoured." << (*returnVal) << std::endl;
     std::cout << clouds.size() << " cloud(s) have been loaded." << std::endl;
-    Visualization::showMultiClouds(clouds, clouds.size());
+    Visualization::showMultiClouds(clouds);
     delete returnVal;
 }

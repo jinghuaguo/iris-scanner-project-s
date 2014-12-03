@@ -8,8 +8,11 @@
 int Visualization::showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts)
 {
     if (viewPorts < 1)
-        return -2;
-
+    {
+        viewPorts = clouds.size();
+        if (viewPorts < 1)
+            return -2;
+    }
     pcl::visualization::PCLVisualizer viewer("Viewer");
 
     int width = (int)sqrt((double)viewPorts);
@@ -43,7 +46,7 @@ int Visualization::showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts)
 
     viewer.setShowFPS(false);
     viewer.setCameraPosition(-1, 1, -10, 0, -1, 0);
-    viewer.setPosition(250, 100);
+    viewer.setPosition(200, 75);
     viewer.setSize(800, 600);
     viewer.spin();
 

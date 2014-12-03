@@ -7,7 +7,7 @@
 class Visualization
 {
 public:
-    static int showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts = 1);
+    static int showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts = 0);
 };
 
 #endif
