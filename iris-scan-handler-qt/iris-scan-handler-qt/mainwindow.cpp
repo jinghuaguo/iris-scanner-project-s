@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mainWindowPtr = this;
 
     ui->setupUi(this);
-    //this->setWindowState(Qt::WindowState::WindowMaximized);
+    this->setWindowState(Qt::WindowState::WindowMaximized);
     this->cPrj = 0;
 
     //lblStatus
@@ -1008,5 +1008,4 @@ void MainWindow::onReturnRead()
     {
         ui->txtInfo->append(read);
     }
-
 }
