@@ -15,30 +15,40 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     project.cpp \
     viewhandler.cpp \
-    settingwindow.cpp \
-    ../../dependencies/grayscaleregistration.cpp \
-    ../../dependencies/icp.cpp \
-    ../../dependencies/registration.cpp \
-    ../../dependencies/surface.cpp \
-    ../../dependencies/utils.cpp
+    settingwindow.cpp
 
 HEADERS  += mainwindow.h \
     project.h \
     viewhandler.h \
     settingwindow.h \
-    ../../dependencies/grayscaleregistration.h \
-    ../../dependencies/icp.h \
-    ../../dependencies/registration.h \
-    ../../dependencies/surface.h \
-    ../../dependencies/typedef.h \
-    ../../dependencies/utils.h
 
 FORMS    += mainwindow.ui \
     settingwindow.ui
 
 RC_FILE = resources.rc
 
+RESOURCES += \
+    resources.qrc
+
+OTHER_FILES += \
+    resources.rc \
+    Kinect.ico
+
+#Dependencies
 INCLUDEPATH+=   "../../dependencies"
+
+SOURCES +=  ../../dependencies/grayscaleregistration.cpp \
+            ../../dependencies/icp.cpp \
+            ../../dependencies/registration.cpp \
+            ../../dependencies/surface.cpp \
+            ../../dependencies/utils.cpp
+
+HEADERS +=  ../../dependencies/grayscaleregistration.h \
+            ../../dependencies/icp.h \
+            ../../dependencies/registration.h \
+            ../../dependencies/surface.h \
+            ../../dependencies/typedef.h \
+            ../../dependencies/utils.h
 
 #Additional Includes with PCL and OpenCV
 INCLUDEPATH+=   "C:/Program Files (x86)/Boost/include"
@@ -199,10 +209,3 @@ LIBS+=          "D:/Libraries/opencv/build/x86/vc10/lib/opencv_ts248.lib"
 LIBS+=          "D:/Libraries/opencv/build/x86/vc10/lib/opencv_video248.lib"
 LIBS+=          "D:/Libraries/opencv/build/x86/vc10/lib/opencv_videostab248.lib"
 }
-
-RESOURCES += \
-    resources.qrc
-
-OTHER_FILES += \
-    resources.rc \
-    Kinect.ico
