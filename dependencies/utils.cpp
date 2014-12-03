@@ -7,10 +7,12 @@ double Utils::getDistance(const Point &p1, const Point &p2)
 
 int Utils::readPointClouds(const int &count, char** &paths, std::vector<CloudPtr> &cloud_list)
 {
-    for (int i = 1; i < count; ++i)
+    for (int i = 0; i < count; ++i)
     {
         CloudPtr cloud(new Cloud);
-        readSinglePointCloud(paths[i], cloud);
+        int returnVal = readSinglePointCloud(paths[i], cloud);
+        if (returnVal != 0)
+            return returnVal;
         cloud_list.push_back(cloud);
     }
     return 0;
