@@ -15,7 +15,8 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    ../../dependencies/visualization.cpp
+    ../../dependencies/visualization.cpp \
+    ../../dependencies/regeval.cpp
 
 #Dependencies
 INCLUDEPATH+=   "../../dependencies"
@@ -32,7 +33,8 @@ HEADERS +=  ../../dependencies/grayscaleregistration.h \
             ../../dependencies/surface.h \
             ../../dependencies/typedef.h \
             ../../dependencies/utils.h \
-    ../../dependencies/visualization.h
+    ../../dependencies/visualization.h \
+    ../../dependencies/regeval.h
 
 #Additional Includes with PCL and OpenCV
 INCLUDEPATH+=   "C:/Program Files (x86)/Boost/include"
