@@ -15,20 +15,23 @@ int Visualization::showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts)
     }
     pcl::visualization::PCLVisualizer viewer("Viewer");
 
-    int width = (int)sqrt((double)viewPorts);
-    int height = (int)(viewPorts / width);
-    if (width * height < viewPorts) height++;
+//    int width = (int)sqrt((double)viewPorts);
+//    int height = (int)(viewPorts / width);
+//    if (width * height < viewPorts) height++;
 
-    int *portRef = new int[viewPorts];
-    for (int i = 0; i < viewPorts; i++)
-    {
-        portRef[i] = i;
-        viewer.createViewPort((1.0 / width) * (i % width),
-                              (1.0 / height) * (i / height),
-                              (1.0 / width) * (i % width + 1),
-                              (1.0 / height) * (i / height + 1),
-                              portRef[i]);
-    }
+//    std::vector<int> portRef;
+//    for (int i = 0; i < viewPorts; i++)
+//        portRef.push_back(i);
+
+//    for (int i = 0; i < viewPorts; i++)
+//    {
+//        portRef[i] = i;
+//        viewer.createViewPort((1.0 / width) * (i % width),
+//                              (1.0 / height) * (i / height),
+//                              (1.0 / width) * (i % width + 1),
+//                              (1.0 / height) * (i / height + 1),
+//                              portRef[i]);
+//    }
 
     viewer.initCameraParameters();
     std::string str_buf;
@@ -41,7 +44,7 @@ int Visualization::showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts)
         sprintf_s(count_buf, "%d", i);
         str_buf.append(count_buf);
 
-        viewer.addPointCloud(clouds[i], str_buf, i % viewPorts);
+        viewer.addPointCloud(clouds[i], str_buf/*, portRef[i % viewPorts]*/);
     }
 
     viewer.setShowFPS(false);
@@ -50,6 +53,5 @@ int Visualization::showMultiClouds(std::vector<CloudPtr> &clouds, int viewPorts)
     viewer.setSize(800, 600);
     viewer.spin();
 
-    delete[] portRef;
     return 0;
 }
