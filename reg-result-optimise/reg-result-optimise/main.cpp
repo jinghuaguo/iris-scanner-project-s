@@ -3,12 +3,12 @@
 #include "visualization.h"
 #include "grayscaleregistration.h"
 
-#include <pcl/kdtree/kdtree_flann.h>
-
 #include "vector"
 #include "iostream"
 #include "ctime"
 #include "cmath"
+
+#include <pcl/kdtree/kdtree_flann.h>
 
 void markPair(Point &a, Point &b)
 {
@@ -40,10 +40,10 @@ double colorRank(const Point *a, const Point *b)
 int main(int argc, char *argv[])
 {
     clock_t tStart, tStop;
-//    argc = 2;
-//    argv = new char*[argc];
-//    argv[0] = "D:\\PCDs\\20140817\\0001.pcd";
-//    argv[1] = "D:\\PCDs\\20140817\\0003.pcd";
+    argc = 2;
+    argv = new char*[argc];
+    argv[0] = "D:\\PCDs\\20140817\\0001.pcd";
+    argv[1] = "D:\\PCDs\\20140817\\0003.pcd";
     std::vector <CloudPtr> clouds;
     int *returnVal = new int[1];
     tStart = clock();

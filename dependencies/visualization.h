@@ -2,6 +2,7 @@
 #define _VISUALIZATION_H_
 
 #include "typedef.h"
+
 #include <vector>
 
 class Visualization
